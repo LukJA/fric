@@ -89,11 +89,71 @@ class posit(object):
         sf = 2**(2**(self.en))
         return ( ((1-3*s) + f) * 2**((1-2*s)*(e+s)) * sf**((1-2*s)*r) )
 
+    def from_float(self, x: float, n: int, es: int):
+        if x == float(0):
+            self.p_set(es, "0"*n)
+            return 1
+
+        ## grab sign and store
+        if x < 0:
+            sign = -1
+            x = x*-1
+        else:
+            sign = 1
+        
+        useed = 2**(2**es)
+        ## first divide by useed or multiply by useed until it is in the 
+        ## interval [1, useed).
+        r = 1
+        if x < 1:
+            r = 0
+            while(x < 1):
+                x = x*useed
+                r = r - 1
+        elif x >= useed:
+            r = 1
+            while(x >= useed):
+                x = x/useed
+                r = r + 1
+
+
+        ## next divide by 2 or multiply by 2 until it is in the 
+        ## interval [1, 2).
+        e = 0
+        if x < 1:
+            while(x < 1):
+                x = x*2
+                e = e - 1
+        elif x >= 2:
+            while(x >= 2):
+                x = x/2
+                e = e + 1
+
+        ## sign and regime
+        posstr = "0" if sign == 1 else "1"
+        posstr += r*"1"+"0" if r > 0 else -1*r*"0"+"1"
+
+        ## exponent - bin string
+        e = format(e, 'b')
+        if len(e) < es:
+            e = "0"*(es - len(e)) + e
+        #print(e)
+        posstr += e
+
+        if len(posstr) >= n:
+            self.p_set(es, posstr[:n])
+            return 1
+
+        ## append fraction
+        posstr += "0"*(n - len(posstr))
+        self.p_set(es, posstr)
+
+
+        
+
+
+
 x = posit(1, "10000")
+## 0000101→+000101 3/128
+x.from_float(3/128, 7, 1)
 print(x)
-# print(x.sign_str())
-# print(x.regime_len(), x.regime_str())
-# print(x.rbar_len(), x.rbar_str())
-# print(x.exp_len(), x.exp_str())
-# print(x.frac_len(), x.frac_str())
-print(x.to_float())
