@@ -89,6 +89,50 @@ class posit(object):
         sf = 2**(2**(self.en))
         return ( ((1-3*s) + f) * 2**((1-2*s)*(e+s)) * sf**((1-2*s)*r) )
 
+    def to_float_2c(self) -> float:
+        if int(self.p_str[1:]) == 0:
+            return 0.0 if self.sign_str() == "0" else float("NaN")
+
+        # store sign
+        s = int(self.sign_str())
+        # convert 
+        s = 1 if s  == 0 else -1
+        # store original pstr
+        p_str = self.p_str
+        if s == -1:
+            # twos complement negate before the decode 
+            self.p_str = self.p_str.replace("1", "A")
+            self.p_str = self.p_str.replace("0", "1")
+            self.p_str = self.p_str.replace("A", "0")
+
+            ## add 1 and extend
+            self.p_str = format(int(self.p_str, 2) + 1, 'b')
+            if len(self.p_str) < len(p_str):
+                self.p_str = "0"*(len(p_str)- len(self.p_str)) + self.p_str
+
+        # else s == 0
+
+        if self.frac_len():
+            f = 2**(-self.frac_len())*int(self.frac_str(), 2)
+        else:
+            f = 0
+        if self.exp_len():
+            e = int(self.exp_str(), 2)
+        else:
+            e = 0
+
+        if self.rbar_str() == "1":
+            r = -1*self.regime_len()
+        else:
+            r = self.regime_len() - 1
+
+        sf = 2**(2**(self.en))
+
+        # revert complement
+        self.p_str = p_str
+        return (1 + f) * 2**(e) * sf**(r) * s
+
+
     def from_float(self, x: float, n: int, es: int):
         if x == float(0):
             self.p_set(es, "0"*n)
@@ -153,7 +197,10 @@ class posit(object):
 
 
 
-x = posit(1, "10000")
+x = posit(1, "1001001")
 ## 0000101→+000101 3/128
-x.from_float(3/128, 7, 1)
 print(x)
+print(x.to_float())
+print(x.to_float_2c())
+print(x.to_float())
+
