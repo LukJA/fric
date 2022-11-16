@@ -1,4 +1,4 @@
-class posit(object):
+class Posit(object):
     def __init__(self, en: int, p_str: str):
         self.en = en
         self.p_str = p_str
@@ -38,14 +38,11 @@ class posit(object):
     def frac_len(self) -> int:
         return len(self.p_str) - (1 + self.regime_len() + self.rbar_len() + self.exp_len())
 
-    def sign_str(self) -> str:
-        return self.p_str[0]
-
     def regime_str(self) -> str:
         return self.p_str[1: 1 + self.regime_len()]
 
     def rbar_str(self) -> str:
-        if self.rbar_len:
+        if self.rbar_len():
             return self.p_str[1 + self.regime_len()]
         else:
             return ""
@@ -201,34 +198,3 @@ class posit(object):
             index -= 1
         #print(posstr)
         self.p_set(es, posstr)
-
-
-        
-
-# x = posit(1, "0001001")
-# y = posit(1, "0001111")
-# ## 0000101→+000101 3/128
-
-# # print(x)
-# # print(x.to_float())
-# print(y)
-# print(3/128)
-# y.from_float(3/128, 7, 1)
-# print(y)
-# print(y.to_float_2c())
-
-print(3/16) # 0001110 7 1
-x = posit(1, "0001110")
-print(x, x.to_float_2c())
-x.from_float(x.to_float_2c(), 7, 1)
-print(x, x.to_float_2c())
-
-print(3/128) # 0000101 7 1
-x = posit(1, "0000101")
-print(x, x.to_float_2c())
-x.from_float(x.to_float_2c(), 7, 1)
-print(x, x.to_float_2c())
-
-
-
-
