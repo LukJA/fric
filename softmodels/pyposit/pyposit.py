@@ -217,17 +217,18 @@ class posit(object):
 # print(y)
 # print(y.to_float_2c())
 
-print(3/16) # 0001110 7 1
-x = posit(1, "0001110")
-print(x, x.to_float_2c())
-x.from_float(x.to_float_2c(), 7, 1)
-print(x, x.to_float_2c())
+if __name__ == "__main__":
+    print(3/16) # 0001110 7 1
+    x = posit(1, "0001110")
+    print(x, x.to_float_2c())
+    x.from_float(x.to_float_2c(), 7, 1)
+    print(x, x.to_float_2c())
 
-print(3/128) # 0000101 7 1
-x = posit(1, "0000101")
-print(x, x.to_float_2c())
-x.from_float(x.to_float_2c(), 7, 1)
-print(x, x.to_float_2c())
+    print(3/128) # 0000101 7 1
+    x = posit(1, "0000101")
+    print(x, x.to_float_2c())
+    x.from_float(x.to_float_2c(), 7, 1)
+    print(x, x.to_float_2c())
 
 
 
