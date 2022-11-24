@@ -6,6 +6,9 @@ class posit(object):
     def __repr__(self) -> str:
         return self.p_str
 
+    def get_p_str(self) -> str:
+        return self.p_str
+        
     def p_set(self, en: int, p_str: str):
         self.en = en
         self.p_str = p_str
@@ -134,7 +137,7 @@ class posit(object):
 
 
     def from_float(self, x: float, n: int, es: int):
-        if x == float(0):
+        if x == float(0.0):
             self.p_set(es, "0"*n)
             return 1
 
@@ -174,7 +177,7 @@ class posit(object):
                 e = e + 1
 
         ## sign and regime
-        posstr = "0" if sign == 1 else "1"
+        posstr = "0" #if sign == 1 else "1" ## wait till end for sign conversion
         posstr += r*"1"+"0" if r > 0 else -1*r*"0"+"1"
 
         ## exponent - bin string
@@ -200,7 +203,17 @@ class posit(object):
             else:
                 posstr += "0"
             index -= 1
-        #print(posstr)
+        
+        ## if we have a negative sign requested, take the two's complement form
+        if sign == -1:
+            posstr = posstr.replace("1", "A")
+            posstr = posstr.replace("0", "1")
+            posstr = posstr.replace("A", "0")
+
+            ## add 1 and extend
+            posstr = format(int(posstr, 2) + 1, 'b')
+            if len(posstr) < n:
+                posstr = "0"*(n- len(posstr)) + posstr
         self.p_set(es, posstr)
 
 
