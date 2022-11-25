@@ -1,4 +1,25 @@
 class posit(object):
+    """ Posit numerical object """
+
+    ## pure functions
+    def twos_complement(self, s: str, n = None) -> str:
+        ## take a string of 1 and 0 2's complement
+        ## default behaviour on overflow is a wraparound to 0
+        if n is None:
+            n = len(s)
+        q = s.replace("1", "A")
+        q = q.replace("0", "1")
+        q = q.replace("A", "0")
+
+        ## add 1 and extend
+        q = format(int(q, 2) + 1, 'b')
+        if len(q) < n: ## the addition has remove leading zeroes
+            q = "0"*(n-len(q)) + q
+        elif len(q) > n: ## the addition has overflowed - wrap around
+            q = "0"*n
+        return q
+
+    ## methods
     def __init__(self, en: int, p_str: str):
         self.en = en
         self.p_str = p_str
@@ -12,6 +33,9 @@ class posit(object):
     def p_set(self, en: int, p_str: str):
         self.en = en
         self.p_str = p_str
+
+    def p_set_complement(self):
+        self.p_str = self.twos_complement(self.p_str)
 
     def sign_str(self) -> str:
         return self.p_str[0]
@@ -104,14 +128,7 @@ class posit(object):
         p_str = self.p_str
         if s == -1:
             # twos complement negate before the decode 
-            self.p_str = self.p_str.replace("1", "A")
-            self.p_str = self.p_str.replace("0", "1")
-            self.p_str = self.p_str.replace("A", "0")
-
-            ## add 1 and extend
-            self.p_str = format(int(self.p_str, 2) + 1, 'b')
-            if len(self.p_str) < len(p_str):
-                self.p_str = "0"*(len(p_str)- len(self.p_str)) + self.p_str
+            self.p_str = self.twos_complement(self.p_str)
 
         # else s == 0
 
@@ -206,14 +223,8 @@ class posit(object):
         
         ## if we have a negative sign requested, take the two's complement form
         if sign == -1:
-            posstr = posstr.replace("1", "A")
-            posstr = posstr.replace("0", "1")
-            posstr = posstr.replace("A", "0")
+            posstr = self.twos_complement(posstr)
 
-            ## add 1 and extend
-            posstr = format(int(posstr, 2) + 1, 'b')
-            if len(posstr) < n:
-                posstr = "0"*(n- len(posstr)) + posstr
         self.p_set(es, posstr)
 
 
@@ -230,9 +241,11 @@ class posit(object):
         print(f"A: {self}, B: {other}")
         print(f"Approx {self.to_float()} + {other.to_float()}")
 
-            ## extract signs
+        ## extract signs
         a_s = self.sign_i()
         b_s = other.sign_i()
+
+        ## 
 
         ## extract fraction numeric values
         a_f_s = self.frac_str()
@@ -330,9 +343,9 @@ class posit(object):
         ## recompare the regime and the exponent levels
         ## 2^e8 vs 2^2^es^r8
         print(f"Prenormal: R:{r_out} E:{e_out} F:(1).{f_sum}")
-        if (e_out > 2**es):
+        if (e_out >= 2**es):
             e_out -= 2**es
-            e_out += 1
+            r_out += 1
         print(f"Posnormal: R:{r_out} E:{e_out} F:(1).{f_sum}")
 
         ## we now have all the ideal required parts, convert to closest posit repr by available space
@@ -406,16 +419,19 @@ class posit(object):
 
         ## compute the fractional value
         print(f"Poscat: R:{r_out} E:{e_out} F:(1).{f_sum}")
-        f = 2**(-len(f_sum))*int(f_sum, 2)
+        f = 2**(-len(f_sum))*int("0" + f_sum, 2)
         sff = 2**(2**(es))
         print(f"Out: {1+f} * { 2**(e_out)} * {sff**(r_out)}")
         print( (1 + f) * 2**(e_out) * sff**(r_out) )
 
         finalstr = "0"
+        print(f"0 + R{regime_}*X + R_{'Y' if (regime_ + 1 < n) else ''} + E{bin(e_out)[2:]} + F{f_sum}")
         if r_out < 0:
             finalstr += (regime_)*"0" + "1" + bin(e_out)[2:] + f_sum
         else:
             finalstr += (regime_)*"1" + "0" + bin(e_out)[2:] + f_sum
+        ## chop off the excess to fit the posit repr
+        finalstr = finalstr[:n]
 
         print(finalstr)
         return posit(es, finalstr)
