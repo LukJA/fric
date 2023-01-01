@@ -246,7 +246,7 @@ class posit():
         a_s = self.sign_i()
         b_s = other.sign_i()
 
-        ## if either is negative, take the complement to get the positve form
+        ## if either is negative, take the complement to get the positive form
         if a_s == -1:
             self.p_set_complement()
         if b_s == -1:
@@ -334,19 +334,24 @@ class posit():
         print(f"big:   0.{frac_big}")
         print(f"small: 0.{frac_smol}")
 
-        ## if either is negative, take the complement 
-        if big_s == -1:
-            print("Bigger negative - invert")
-            frac_big = self.twos_complement(frac_big, len(frac_big))
-            print(f"big:   0.{frac_big}")
-            print(f"small: 0.{frac_smol}")
-        if smol_s == -1:
+        ## sign control
+        # posneg
+        if big_s == 1 and smol_s == -1:
             print("Smaller negative - invert")
             frac_smol = self.twos_complement(frac_smol, len(frac_smol))
             print(f"big:   0.{frac_big}")
             print(f"small: 0.{frac_smol}")
+        # negpos
+        if big_s == -1 and smol_s == 1:
+            print("Bigger negative - invert smaller and negate answer")
+            frac_smol = self.twos_complement(frac_smol, len(frac_smol))
+            print(f"big:   0.{frac_big}")
+            print(f"small: 0.{frac_smol}")
+        # negpos
+        if big_s == -1 and smol_s == -1:
+            print("Both negative - negate answer")
 
-        if big_s == -1 or smol_s == -1:
+        if (big_s == 1 and smol_s) == -1 or (big_s == -1 and smol_s == 1):
             print("Negative detected in sum")
             f_sum = bin(int(frac_big, 2) + int(frac_smol, 2))[2:]
             print(f"Sum: {frac_big} + {frac_smol} = {f_sum}")
@@ -483,6 +488,10 @@ class posit():
         ## chop off the excess to fit the posit repr
         finalstr = finalstr[:n]
 
+        ## if we really want the negative soln, invert it
+        if big_s == -1:
+            finalstr = self.twos_complement(finalstr)
+            dprint.debug("Taking negation of answer")
         print(finalstr)
 
         ## if either is negative, reset them back to what we had earlier (software)
@@ -527,7 +536,7 @@ if __name__ == "__main__":
     a = posit(1, "0000000")
     b = posit(1, "0000000")
 
-    a.from_float(256, 7, 1)
+    a.from_float(-128, 7, 1)
     b.from_float(-128, 7, 1)
     print((a+b).to_float())
 
