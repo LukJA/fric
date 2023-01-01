@@ -1,4 +1,5 @@
 # setup_logger.py
 import logging
-logging.basicConfig(level=logging.DEBUG)
+FORMAT = '[%(name)s:%(levelname)s]  %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
 logger = logging.getLogger('dbg')

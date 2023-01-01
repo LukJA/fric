@@ -505,6 +505,15 @@ class posit():
         if b_s == -1:
             other.p_set_complement()
         return posit(es, finalstr)
+
+    def __sub__(self, other):
+        ## subtract other from self
+        ## complement other and add
+        a = self
+        b = other
+        b.p_set_complement()
+        x = a + b
+        return x
                 
         
 
@@ -541,8 +550,8 @@ if __name__ == "__main__":
     b = posit(1, "0000000")
 
     a.from_float(16.0, 7, 1)
-    b.from_float(5, 7, 1)
-    assert (a+b).to_float() == 24
+    b.from_float(8, 7, 1)
+    assert (a-b).to_float() == 8
 
 
 

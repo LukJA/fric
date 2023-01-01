@@ -225,6 +225,50 @@ def test_addition_rounding_negative_71():
     b.from_float(-12.0, 7, 1)
     assert (a+b).to_float() == -48
 
+def test_subtraction_exact_positive_71():
+    a = posit(1, "0000000")
+    b = posit(1, "0000000")
+
+    a.from_float(1.0, 7, 1)
+    b.from_float(1.0, 7, 1)
+    assert (a-b).to_float() == 0
+
+    a.from_float(1.5, 7, 1)
+    b.from_float(1.0, 7, 1)
+    assert (a-b).to_float() == 0.5
+
+    a.from_float(8.0, 7, 1)
+    b.from_float(6.0, 7, 1)
+    assert (a-b).to_float() == 2.0
+
+    a.from_float(12.0, 7, 1) 
+    b.from_float(10.0, 7, 1)
+    assert (a-b).to_float() == 2.0
+
+    a.from_float(64.0, 7, 1)
+    b.from_float(16.0, 7, 1)
+    assert (a-b).to_float() == 48
+
+    a.from_float(256.0, 7, 1)
+    b.from_float(128.0, 7, 1)
+    assert (a-b).to_float() == 128
+
+def test_subtraction_rounding_positive_71():
+    a = posit(1, "0000000")
+    b = posit(1, "0000000")
+
+    a.from_float(10.0, 7, 1)
+    b.from_float(1.5, 7, 1)
+    assert (a-b).to_float() == 8
+
+    a.from_float(24, 7, 1)
+    b.from_float(5.0, 7, 1)
+    assert (a-b).to_float() == 16
+
+    a.from_float(32, 7, 1)
+    b.from_float(10.0, 7, 1)
+    assert (a-b).to_float() == 24
+
 
 
 
