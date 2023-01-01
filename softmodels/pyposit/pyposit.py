@@ -455,22 +455,27 @@ class posit():
                 ## round down case
                 if digit_n1 == "0":
                     print(f"Round Down {f_sum} {f_depth}")
-                    print(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} = '0X' or '10'")
+                    #print(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} = '0X' or '10'")
                     f_sum = f_sum[:f_depth]
                 ## round up case
                 else:
                     print("Round Up")
-                    print(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} != '0X' or '10'")
+                    #print(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} != '0X' or '10'")
                     ## shift right to get MSB
+                    print(f"f og: {f_sum}")
                     f_sum = "1" + f_sum
-                    ## add one
-                    roundup = bin(int(f_sum, 2) + int("1", 2))[2:]
+                    print(f"f ex: {f_sum}")
+                    ## add one at LSB-1 and take the floor
+                    roundup = bin(int(f_sum, 2) + int("1"+"0"*( len(f_sum)-f_depth-1), 2))[2:]
+                    print(f"rup: {roundup}")
                     ## check for overflow
                     if len(roundup) > len(f_sum):
                         raise BaseException("Rounding Overflow Not Implemented")
                     
                     ## shift left one and round up
                     f_sum = roundup[1: f_depth+1]
+                    print(f"f rd: {f_sum}")
+
 
         ## compute the fractional value
         print(f"Poscat: R:{r_out} E:{e_out} F:(1).{f_sum}")
@@ -532,13 +537,12 @@ if __name__ == "__main__":
     # x.from_float(-128, 7, 1)
     # print(x, x.to_float())
 
-
     a = posit(1, "0000000")
     b = posit(1, "0000000")
 
-    a.from_float(-128, 7, 1)
-    b.from_float(-128, 7, 1)
-    print((a+b).to_float())
+    a.from_float(16.0, 7, 1)
+    b.from_float(5, 7, 1)
+    assert (a+b).to_float() == 24
 
 
 
