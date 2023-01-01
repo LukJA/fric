@@ -1,4 +1,5 @@
-class posit(object):
+from dbg import logger as dprint
+class posit():
     """ Posit numerical object """
 
     ## pure functions
@@ -154,6 +155,7 @@ class posit(object):
 
 
     def from_float(self, x: float, n: int, es: int):
+        dprint.debug(f"FromFloat() [{x}]")
         if x == float(0.0):
             self.p_set(es, "0"*n)
             return 1
@@ -180,7 +182,6 @@ class posit(object):
                 x = x/useed
                 r = r + 1
 
-
         ## next divide by 2 or multiply by 2 until it is in the 
         ## interval [1, 2).
         e = 0
@@ -193,6 +194,8 @@ class posit(object):
                 x = x/2
                 e = e + 1
 
+        dprint.debug(f"{sign} {r} {e} {x}")
+
         ## sign and regime
         posstr = "0" #if sign == 1 else "1" ## wait till end for sign conversion
         posstr += r*"1"+"0" if r > 0 else -1*r*"0"+"1"
@@ -201,30 +204,28 @@ class posit(object):
         e = format(e, 'b')
         if len(e) < es:
             e = "0"*(es - len(e)) + e
-        #print(e)
         posstr += e
 
         if len(posstr) >= n:
-            self.p_set(es, posstr[:n])
-            return 1
-
-        ## append fraction
-        ## iteratively encode the fraction (we can just keep going until we run out of precision)
-        ## TODO p.s. im not sure this actually follows the correct rounding spec, like the adder does
-        x -= 1
-        index = -1
-        while (len(posstr) < n):
-            if x >= 2**(index):
-                posstr += "1"
-                x -= 2**(index)
-            else:
-                posstr += "0"
-            index -= 1
+            posstr = posstr[:n]
+        else:
+            ## append fraction
+            ## iteratively encode the fraction (we can just keep going until we run out of precision)
+            ## TODO p.s. im not sure this actually follows the correct rounding spec, like the adder does
+            x -= 1
+            index = -1
+            while (len(posstr) < n):
+                if x >= 2**(index):
+                    posstr += "1"
+                    x -= 2**(index)
+                else:
+                    posstr += "0"
+                index -= 1
         
         ## if we have a negative sign requested, take the two's complement form
         if sign == -1:
             posstr = self.twos_complement(posstr)
-
+        dprint.debug(f" -> {posstr} {es}")
         self.p_set(es, posstr)
 
 
@@ -245,7 +246,11 @@ class posit(object):
         a_s = self.sign_i()
         b_s = other.sign_i()
 
-        ## 
+        ## if either is negative, take the complement to get the positve form
+        if a_s == -1:
+            self.p_set_complement()
+        if b_s == -1:
+            other.p_set_complement()
 
         ## extract fraction numeric values
         a_f_s = self.frac_str()
@@ -286,8 +291,11 @@ class posit(object):
         frac_big = ""
         e_out = -1 # pre-shift the p1
         r_out = 0
+        big_s = 0
+        smol_s = 0
         
         # a >= b
+        ## a is the larger
         if (a_r > b_r) or \
         (a_r == b_r and a_e > b_e) or \
         (a_r == b_r and a_e == b_e and a_f >= b_f):
@@ -302,6 +310,9 @@ class posit(object):
             frac_smol = "1" + b_f_s
             frac_smol = "0"*(exp_adj) + frac_smol
             frac_big = "1" + a_f_s
+            # copy the signs over
+            big_s = a_s
+            smol_s = b_s
         else:
             ## b is the larger
             print("B is larger")
@@ -313,6 +324,9 @@ class posit(object):
             frac_smol = "1" + a_f_s
             frac_smol = "0"*(exp_adj) + frac_smol
             frac_big = "1" + b_f_s
+            # copy the signs over
+            big_s = b_s
+            smol_s = a_s
 
         # extend big to match depth
         frac_big = frac_big + (len(frac_smol) - len(frac_big))*"0"
@@ -320,32 +334,64 @@ class posit(object):
         print(f"big:   0.{frac_big}")
         print(f"small: 0.{frac_smol}")
 
-        ## peform the fractional addition
-        ## add and zero extend
-        f_sum = bin(int(frac_big, 2) + int(frac_smol, 2))[2:]
-        print(f"Sum: {frac_big} + {frac_smol} = {f_sum}")
+        ## if either is negative, take the complement 
+        if big_s == -1:
+            print("Bigger negative - invert")
+            frac_big = self.twos_complement(frac_big, len(frac_big))
+            print(f"big:   0.{frac_big}")
+            print(f"small: 0.{frac_smol}")
+        if smol_s == -1:
+            print("Smaller negative - invert")
+            frac_smol = self.twos_complement(frac_smol, len(frac_smol))
+            print(f"big:   0.{frac_big}")
+            print(f"small: 0.{frac_smol}")
 
-        if len(f_sum) > len(frac_smol):
-            ## overflow case
-            #raise BaseException("Fraction Summation Overflow")
-            e_out += 1
-        elif len(f_sum) <= len(frac_smol):
-            f_sum = (max(len(frac_smol), len(frac_big)) - len(f_sum))*"0" + f_sum
+        if big_s == -1 or smol_s == -1:
+            print("Negative detected in sum")
+            f_sum = bin(int(frac_big, 2) + int(frac_smol, 2))[2:]
+            print(f"Sum: {frac_big} + {frac_smol} = {f_sum}")
+            
+            if len(f_sum) > len(frac_big):
+                f_sum = f_sum[1:]
+        else:
+            ## peform the fractional addition
+            ## add and zero extend
+            f_sum = bin(int(frac_big, 2) + int(frac_smol, 2))[2:]
+            print(f"Sum: {frac_big} + {frac_smol} = {f_sum}")
 
-        print(f"Sum: 0.{f_sum}")
+            if len(f_sum) > len(frac_smol):
+                ## overflow case
+                #raise BaseException("Fraction Summation Overflow")
+                e_out += 1
+            elif len(f_sum) <= len(frac_smol):
+                f_sum = (max(len(frac_smol), len(frac_big)) - len(f_sum))*"0" + f_sum
+
+        print(f"Final Sum: 0.{f_sum}")
 
         ## normalise the sum (i.e. reshift until the first 1 is gone)
-        c = f_sum.find("1") + 1
-        f_sum = f_sum[c:]
-        print(f"C Normalised by {c}: 1.{f_sum}")
+        x = f_sum.find("1")
+        if x > -1:
+            print(f"First 1 at position {x}") 
+            f_sum = f_sum[x + 1:]
+            print(f"C Normalised by {x + 1} to get: 1.{f_sum}")
+        else:
+            print("Fraction is all 0s - answer is 0.0")
+            x = 0
+            r_out = -n ## force regime exceedence
+
         ## update the exponent with the normalised shift
-        e_out = e_out + c
+        print(f"E out moved from {e_out}")
+        e_out = e_out - x + 1
+        print(f"E out moved to {e_out}")
         ## recompare the regime and the exponent levels
         ## 2^e8 vs 2^2^es^r8
         print(f"Prenormal: R:{r_out} E:{e_out} F:(1).{f_sum}")
-        if (e_out >= 2**es):
+        while (e_out >= 2**es):
             e_out -= 2**es
             r_out += 1
+        while (e_out < 0):
+            e_out += 2**es
+            r_out -= 1
         print(f"Posnormal: R:{r_out} E:{e_out} F:(1).{f_sum}")
 
         ## we now have all the ideal required parts, convert to closest posit repr by available space
@@ -397,8 +443,12 @@ class posit(object):
                 pass
             else:
                 ## we need to round
+                digit_n = f_sum[f_depth-1]
+                digit_n1 = f_sum[f_depth]
+                print(f"{digit_n}-{digit_n1}-({f_sum[f_depth+1:]})")
+
                 ## round down case
-                if f_sum[f_depth-1] == "0" or f_sum[f_depth-1] == "1" and f_sum[f_depth] == "0":
+                if digit_n1 == "0":
                     print(f"Round Down {f_sum} {f_depth}")
                     print(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} = '0X' or '10'")
                     f_sum = f_sum[:f_depth]
@@ -434,12 +484,14 @@ class posit(object):
         finalstr = finalstr[:n]
 
         print(finalstr)
+
+        ## if either is negative, reset them back to what we had earlier (software)
+        if a_s == -1:
+            self.p_set_complement()
+        if b_s == -1:
+            other.p_set_complement()
         return posit(es, finalstr)
                 
-        
-    
-
-
         
 
 # x = posit(1, "0001001")
@@ -455,7 +507,7 @@ class posit(object):
 # print(y.to_float_2c())
 
 if __name__ == "__main__":
-    print(3/16) # 0001110 7 1
+    #print(3/16) # 0001110 7 1
     # x = posit(1, "0001110")
     # print(x, x.to_float_2c())
     # x.from_float(x.to_float_2c(), 7, 1)
@@ -467,10 +519,18 @@ if __name__ == "__main__":
     # x.from_float(x.to_float_2c(), 7, 1)
     # print(x, x.to_float_2c())
 
-    a = posit(1, "0100000") # 1
-    b = posit(1, "0110011") # 7
-    c = a + b # 8 0110100
-    print(c)
+    # x = posit(1, "0000000")
+    # x.from_float(-128, 7, 1)
+    # print(x, x.to_float())
+
+
+    a = posit(1, "0000000")
+    b = posit(1, "0000000")
+
+    a.from_float(256, 7, 1)
+    b.from_float(-128, 7, 1)
+    print((a+b).to_float())
+
 
 
 

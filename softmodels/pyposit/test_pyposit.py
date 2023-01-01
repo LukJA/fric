@@ -94,11 +94,6 @@ def test_addition_exact_posneg_71():
     a = posit(1, "0000000")
     b = posit(1, "0000000")
 
-    a.from_float(1.0, 7, 1)
-    b.from_float(-1.0, 7, 1)
-    assert (a+b).to_float() == 0.0
-    assert (a+b).to_float() != 3.0
-
     a.from_float(1.5, 7, 1)
     b.from_float(-1.0, 7, 1)
     assert (a+b).to_float() == 0.5
@@ -110,6 +105,11 @@ def test_addition_exact_posneg_71():
     a.from_float(256.0, 7, 1)
     b.from_float(-128.0, 7, 1)
     assert (a+b).to_float() == 128
+
+    a.from_float(1.0, 7, 1)
+    b.from_float(-1.0, 7, 1)
+    assert (a+b).to_float() == 0.0
+    assert (a+b).to_float() != 3.0
 
 
 
