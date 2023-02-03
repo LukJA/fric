@@ -1,4 +1,7 @@
 from dbg import logger as dprint
+import gmpy2
+gmpy2.set_context(gmpy2.ieee(256))
+#dprint.debug(gmpy2.get_context())
 class posit():
     """ Posit numerical object """
 
@@ -21,9 +24,17 @@ class posit():
         return q
 
     ## methods
-    def __init__(self, en: int, p_str: str):
+    ## posit(es, "0000")
+    ## posit (es, (x, n))
+    def __init__(self, en: int, p_init):
         self.en = en
-        self.p_str = p_str
+        if type(p_init) == str:
+            self.p_str = p_init
+        elif type(p_init) == tuple:
+            self.from_float(p_init[0], p_init[1], es)
+        else:
+            raise BaseException("Incorrect Init Form")
+
 
     def __repr__(self) -> str:
         return self.p_str
@@ -114,6 +125,7 @@ class posit():
 
         ## does not requires two's invertion, although this may be easier in hardware
         ## twos negating then pos decode is simpler
+        dprint.debug(f"S: {s} R: {r} E: {e} F: {f}")
         sf = 2**(2**(self.en))
         return ( ((1-3*s) + f) * 2**((1-2*s)*(e+s)) * sf**((1-2*s)*r) )
 
@@ -151,11 +163,59 @@ class posit():
 
         # revert complement
         self.p_str = p_str
+        dprint.debug(f"S: {s} R: {r} E: {e} F: {f}")
         return (1 + f) * 2**(e) * sf**(r) * s
+
+    def to_float_2c_256(self):
+        if int(self.p_str[1:]) == 0:
+            return 0.0 if self.sign_str() == "0" else float("NaN")
+
+        # store sign
+        s = int(self.sign_str())
+        # convert 
+        s = 1 if s  == 0 else -1
+        # store original pstr
+        p_str = self.p_str
+        if s == -1:
+            # twos complement negate before the decode 
+            self.p_str = self.twos_complement(self.p_str)
+
+        # else s == 0
+
+        if self.frac_len():
+            z = gmpy2.mpfr(self.frac_str(), base=2)
+            f = gmpy2.exp2(-self.frac_len())*z
+        else:
+            f = gmpy2.mpfr(0)
+        if self.exp_len():
+            e = gmpy2.mpfr(self.exp_str(), base=2)
+        else:
+            e = gmpy2.mpfr(0)
+
+        if self.rbar_str() == "1":
+            r = gmpy2.mpfr(-1*self.regime_len())
+        else:
+            r = gmpy2.mpfr(self.regime_len() - 1)
+
+        sf = gmpy2.mpfr(2**(2**(self.en)))
+
+        # revert complement
+        self.p_str = p_str
+        l = gmpy2.mpfr(1) + f
+        m = gmpy2.exp2(e)
+        n = l * m
+        o = pow(sf,r)
+        p = n * o
+        q = gmpy2.mpfr(s)
+        x = q * p
+        dprint.debug("Error")
+        dprint.debug(f"{gmpy2.exp2(-self.frac_len()) * gmpy2.exp2(e) * pow(sf,r) * gmpy2.mpfr(s):.45f}")
+        dprint.debug(x)
+        return (gmpy2.mpfr(1) + f) * gmpy2.exp2(e) * pow(sf,r) * gmpy2.mpfr(s)
 
 
     def from_float(self, x: float, n: int, es: int):
-        dprint.debug(f"FromFloat() [{x}]")
+        dprint.debug(f"[{x}]")
         if x == float(0.0):
             self.p_set(es, "0"*n)
             return 1
@@ -239,8 +299,8 @@ class posit():
         es = self.en
         n = len(self.p_str)
 
-        print(f"A: {self}, B: {other}")
-        print(f"Approx {self.to_float()} + {other.to_float()}")
+        dprint.debug(f"A: {self}, B: {other}")
+        dprint.debug(f"Approx {self.to_float()} + {other.to_float()}")
 
         ## extract signs
         a_s = self.sign_i()
@@ -280,8 +340,8 @@ class posit():
         else:
             b_r = other.regime_len() - 1
 
-        print(f"A~ S:{a_s} R:{a_r} E:{a_e} F:{a_f}")
-        print(f"B~ S:{b_s} R:{b_r} E:{b_e} F:{b_f}")
+        dprint.debug(f"A~ S:{a_s} R:{a_r} E:{a_e} F:{a_f}")
+        dprint.debug(f"B~ S:{b_s} R:{b_r} E:{b_e} F:{b_f}")
 
         ## Check which is bigger and shift to match
         ## if they are equal it doesn't really matter as shift will be 0
@@ -300,7 +360,7 @@ class posit():
         (a_r == b_r and a_e > b_e) or \
         (a_r == b_r and a_e == b_e and a_f >= b_f):
             ## a is the larger
-            print("A is larger")
+            dprint.debug("A is larger")
             exp_adj = sf*(a_r-b_r) + (a_e-b_e)
             # use its base exponents
             e_out += a_e
@@ -315,7 +375,7 @@ class posit():
             smol_s = b_s
         else:
             ## b is the larger
-            print("B is larger")
+            dprint.debug("B is larger")
             exp_adj = sf*(b_r-a_r) + (b_e-a_e)
             e_out += b_e
             r_out += b_r
@@ -331,30 +391,30 @@ class posit():
         # extend big to match depth
         frac_big = frac_big + (len(frac_smol) - len(frac_big))*"0"
 
-        print(f"big:   0.{frac_big}")
-        print(f"small: 0.{frac_smol}")
+        dprint.debug(f"big:   0.{frac_big}")
+        dprint.debug(f"small: 0.{frac_smol}")
 
         ## sign control
         # posneg
         if big_s == 1 and smol_s == -1:
-            print("Smaller negative - invert")
+            dprint.debug("Smaller negative - invert")
             frac_smol = self.twos_complement(frac_smol, len(frac_smol))
-            print(f"big:   0.{frac_big}")
-            print(f"small: 0.{frac_smol}")
+            dprint.debug(f"big:   0.{frac_big}")
+            dprint.debug(f"small: 0.{frac_smol}")
         # negpos
         if big_s == -1 and smol_s == 1:
-            print("Bigger negative - invert smaller and negate answer")
+            dprint.debug("Bigger negative - invert smaller and negate answer")
             frac_smol = self.twos_complement(frac_smol, len(frac_smol))
-            print(f"big:   0.{frac_big}")
-            print(f"small: 0.{frac_smol}")
+            dprint.debug(f"big:   0.{frac_big}")
+            dprint.debug(f"small: 0.{frac_smol}")
         # negpos
         if big_s == -1 and smol_s == -1:
-            print("Both negative - negate answer")
+            dprint.debug("Both negative - negate answer")
 
         if (big_s == 1 and smol_s) == -1 or (big_s == -1 and smol_s == 1):
-            print("Negative detected in sum")
+            dprint.debug("Negative detected in sum")
             f_sum = bin(int(frac_big, 2) + int(frac_smol, 2))[2:]
-            print(f"Sum: {frac_big} + {frac_smol} = {f_sum}")
+            dprint.debug(f"Sum: {frac_big} + {frac_smol} = {f_sum}")
             
             if len(f_sum) > len(frac_big):
                 f_sum = f_sum[1:]
@@ -362,7 +422,7 @@ class posit():
             ## peform the fractional addition
             ## add and zero extend
             f_sum = bin(int(frac_big, 2) + int(frac_smol, 2))[2:]
-            print(f"Sum: {frac_big} + {frac_smol} = {f_sum}")
+            dprint.debug(f"Sum: {frac_big} + {frac_smol} = {f_sum}")
 
             if len(f_sum) > len(frac_smol):
                 ## overflow case
@@ -371,33 +431,33 @@ class posit():
             elif len(f_sum) <= len(frac_smol):
                 f_sum = (max(len(frac_smol), len(frac_big)) - len(f_sum))*"0" + f_sum
 
-        print(f"Final Sum: 0.{f_sum}")
+        dprint.debug(f"Final Sum: 0.{f_sum}")
 
         ## normalise the sum (i.e. reshift until the first 1 is gone)
         x = f_sum.find("1")
         if x > -1:
-            print(f"First 1 at position {x}") 
+            dprint.debug(f"First 1 at position {x}") 
             f_sum = f_sum[x + 1:]
-            print(f"C Normalised by {x + 1} to get: 1.{f_sum}")
+            dprint.debug(f"C Normalised by {x + 1} to get: 1.{f_sum}")
         else:
-            print("Fraction is all 0s - answer is 0.0")
+            dprint.debug("Fraction is all 0s - answer is 0.0")
             x = 0
             r_out = -n ## force regime exceedence
 
         ## update the exponent with the normalised shift
-        print(f"E out moved from {e_out}")
+        dprint.debug(f"E out moved from {e_out}")
         e_out = e_out - x + 1
-        print(f"E out moved to {e_out}")
+        dprint.debug(f"E out moved to {e_out}")
         ## recompare the regime and the exponent levels
         ## 2^e8 vs 2^2^es^r8
-        print(f"Prenormal: R:{r_out} E:{e_out} F:(1).{f_sum}")
+        dprint.debug(f"Prenormal: R:{r_out} E:{e_out} F:(1).{f_sum}")
         while (e_out >= 2**es):
             e_out -= 2**es
             r_out += 1
         while (e_out < 0):
             e_out += 2**es
             r_out -= 1
-        print(f"Posnormal: R:{r_out} E:{e_out} F:(1).{f_sum}")
+        dprint.debug(f"Posnormal: R:{r_out} E:{e_out} F:(1).{f_sum}")
 
         ## we now have all the ideal required parts, convert to closest posit repr by available space
         ## TODO: rounding probably invalid for frac len ~ 0 region
@@ -409,7 +469,7 @@ class posit():
         rnought_ = 1
         exponent_ = es
         if sign_ + regime_ > n:
-            print("Infinity")
+            dprint.debug("Infinity")
         elif sign_ + regime_ == n:
             f_sum = ""
             e_out = 0
@@ -440,64 +500,68 @@ class posit():
             ## extend if necessary to required depth
             f_sum = f_sum + "0"*(f_depth- len(f_sum))
 
-            print(f"Length : {len(f_sum)} Allowed : {f_depth} -> (1).{f_sum[:f_depth]}({f_sum[f_depth:]})")
+            dprint.debug(f"Length : {len(f_sum)} Allowed : {f_depth} -> (1).{f_sum[:f_depth]}({f_sum[f_depth:]})")
             
             if (len(f_sum) == f_depth):
                 ## then we are exact
-                print("Repr Exact")
+                dprint.debug("Repr Exact")
                 pass
             else:
                 ## we need to round
                 digit_n = f_sum[f_depth-1]
                 digit_n1 = f_sum[f_depth]
-                print(f"{digit_n}-{digit_n1}-({f_sum[f_depth+1:]})")
+                dprint.debug(f"{digit_n}-{digit_n1}-({f_sum[f_depth+1:]})")
 
                 ## round down case
                 if digit_n1 == "0":
-                    print(f"Round Down {f_sum} {f_depth}")
-                    #print(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} = '0X' or '10'")
+                    dprint.debug(f"Round Down {f_sum} {f_depth}")
+                    #dprint.debug(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} = '0X' or '10'")
                     f_sum = f_sum[:f_depth]
                 ## round up case
                 else:
-                    print("Round Up")
-                    #print(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} != '0X' or '10'")
+                    dprint.debug("Round Up")
+                    #dprint.debug(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} != '0X' or '10'")
                     ## shift right to get MSB
-                    print(f"f og: {f_sum}")
+                    dprint.debug(f"f og: {f_sum}")
                     f_sum = "1" + f_sum
-                    print(f"f ex: {f_sum}")
+                    dprint.debug(f"f ex: {f_sum}")
                     ## add one at LSB-1 and take the floor
                     roundup = bin(int(f_sum, 2) + int("1"+"0"*( len(f_sum)-f_depth-1), 2))[2:]
-                    print(f"rup: {roundup}")
+                    dprint.debug(f"rup: {roundup}")
                     ## check for overflow
                     if len(roundup) > len(f_sum):
                         raise BaseException("Rounding Overflow Not Implemented")
                     
                     ## shift left one and round up
                     f_sum = roundup[1: f_depth+1]
-                    print(f"f rd: {f_sum}")
+                    dprint.debug(f"f rd: {f_sum}")
 
 
-        ## compute the fractional value
-        print(f"Poscat: R:{r_out} E:{e_out} F:(1).{f_sum}")
+        ## compute the approximate fractional value
+        dprint.debug(f"Poscat: R:{r_out} E:{e_out} F:(1).{f_sum}")
         f = 2**(-len(f_sum))*int("0" + f_sum, 2)
         sff = 2**(2**(es))
-        print(f"Out: {1+f} * { 2**(e_out)} * {sff**(r_out)}")
-        print( (1 + f) * 2**(e_out) * sff**(r_out) )
+        dprint.debug(f"R: {r_out} E: {e_out} F: {f}")
+        dprint.debug(f"Out: {1+f} * { 2**(e_out)} * {sff**(r_out)}")
+        dprint.debug(f"Approx: {(1 + f) * 2**(e_out) * sff**(r_out)}")
+
 
         finalstr = "0"
-        print(f"0 + R{regime_}*X + R_{'Y' if (regime_ + 1 < n) else ''} + E{bin(e_out)[2:]} + F{f_sum}")
+        dprint.debug(f"0 + R{regime_}*X + R_{'Y' if (regime_ + 1 < n) else ''} + E{bin(e_out)[2:]} + F{f_sum}")
+        e_out_str = bin(e_out)[2:]
         if r_out < 0:
-            finalstr += (regime_)*"0" + "1" + bin(e_out)[2:] + f_sum
+            finalstr += (regime_)*"0" + "1" 
         else:
-            finalstr += (regime_)*"1" + "0" + bin(e_out)[2:] + f_sum
+            finalstr += (regime_)*"1" + "0" 
         ## chop off the excess to fit the posit repr
+        finalstr += ("0"*(exponent_-len(e_out_str))) + e_out_str + f_sum
         finalstr = finalstr[:n]
 
         ## if we really want the negative soln, invert it
         if big_s == -1:
             finalstr = self.twos_complement(finalstr)
             dprint.debug("Taking negation of answer")
-        print(finalstr)
+        dprint.debug(finalstr)
 
         ## if either is negative, reset them back to what we had earlier (software)
         if a_s == -1:
@@ -521,40 +585,42 @@ class posit():
 # y = posit(1, "0001111")
 # ## 0000101→+000101 3/128
 
-# # print(x)
-# # print(x.to_float())
-# print(y)
-# print(3/128)
+# # dprint.debug(x)
+# # dprint.debug(x.to_float())
+# dprint.debug(y)
+# dprint.debug(3/128)
 # y.from_float(3/128, 7, 1)
-# print(y)
-# print(y.to_float_2c())
+# dprint.debug(y)
+# dprint.debug(y.to_float_2c())
 
 if __name__ == "__main__":
-    #print(3/16) # 0001110 7 1
+    #dprint.debug(3/16) # 0001110 7 1
     # x = posit(1, "0001110")
-    # print(x, x.to_float_2c())
+    # dprint.debug(x, x.to_float_2c())
     # x.from_float(x.to_float_2c(), 7, 1)
-    # print(x, x.to_float_2c())
+    # dprint.debug(x, x.to_float_2c())
 
-    # print(3/128) # 0000101 7 1
+    # dprint.debug(3/128) # 0000101 7 1
     # x = posit(1, "0000101")
-    # print(x, x.to_float_2c())
+    # dprint.debug(x, x.to_float_2c())
     # x.from_float(x.to_float_2c(), 7, 1)
-    # print(x, x.to_float_2c())
+    # dprint.debug(x, x.to_float_2c(64
 
     # x = posit(1, "0000000")
     # x.from_float(-128, 7, 1)
-    # print(x, x.to_float())
+    # dprint.debug(x, x.to_float())
 
-    a = posit(1, "0000000")
-    b = posit(1, "0000000")
+    n = 64
+    es = 3
 
-    a.from_float(16.0, 7, 1)
-    b.from_float(8, 7, 1)
-    assert (a-b).to_float() == 8
+    a = posit(es, (0.1, n))
+    b = posit(es, (0.2, n))
 
-
-
-
-
+    dprint.debug(a.to_float())
+    dprint.debug(b.to_float())
+    c = a+b
+    
+    dprint.debug(c.to_float())
+    dprint.debug(c.to_float_2c_256())
+    dprint.debug(str(0.1 + 0.2))
 
