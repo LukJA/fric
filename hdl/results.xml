@@ -1,0 +1,6 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1685993282" />
+    <testcase name="dff_test" classname="test_dff" file="/home/luke/Documents/fric/fric/hdl/test_dff.py" lineno="11" time="0.002415895462036133" sim_time_ns="35.001" ratio_time="14487.79574696536" />
+  </testsuite>
+</testsuites>
