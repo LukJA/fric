@@ -7,26 +7,26 @@ def test_from_float_exact_positive_71():
     x = posit(1, "0000000")
 
     x.from_float(3/16, 7, 1)
-    assert x.get_p_str() == "0001110"
+    assert x.p_str == "0001110"
     x.from_float(3/128, 7, 1)
-    assert x.get_p_str() == "0000101"
+    assert x.p_str == "0000101"
     x.from_float(16.0, 7, 1)
-    assert x.get_p_str() == "0111000"
+    assert x.p_str == "0111000"
     x.from_float(0, 7, 1)
-    assert x.get_p_str() == "0000000"
+    assert x.p_str == "0000000"
 
 ## functional tests
 def test_from_float_exact_negative_71():
     x = posit(1, "0000000")
 
     x.from_float(-3/16, 7, 1)
-    assert x.get_p_str() == "1110010"
+    assert x.p_str == "1110010"
     x.from_float(-3/128, 7, 1)
-    assert x.get_p_str() == "1111011"
+    assert x.p_str == "1111011"
     x.from_float(-16.0, 7, 1)
-    assert x.get_p_str() == "1001000"
+    assert x.p_str == "1001000"
     x.from_float(-0, 7, 1)
-    assert x.get_p_str() == "0000000"
+    assert x.p_str == "0000000"
 
 
 def test_to_float_exact_positive_71():

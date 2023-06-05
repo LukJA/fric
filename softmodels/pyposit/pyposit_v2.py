@@ -1,7 +1,4 @@
 from dbg import logger as dprint
-import gmpy2
-gmpy2.set_context(gmpy2.ieee(256))
-
 
 def bin_invert(s: str):
     """Swap all the ones and zero in a bin string"""
@@ -148,37 +145,37 @@ class posit_model():
         else:
             raise BaseException("Incorrect Init Form")
 
-
-    def __repr__(self) -> str:
-        return self.p_str
-
-    def get_p_str(self) -> str:
-        return self.p_str
-        
     def p_set(self, en: int, p_str: str):
         self.en = en
         self.p_str = p_str
 
-    def p_set_complement(self):
-        self.p_str = twoc(self.p_str, len(self.p_str))
+    def __repr__(self) -> str:
+        return self.p_str
 
     def sign_str(self) -> str:
         return self.p_str[0]
-
-    def sign_i(self) -> int:
-        return 1 if self.sign_str() == "0" else -1
-
+    
+    
     def regime_len(self) -> int:
-        for i in range(1, len(self.p_str)):
-            if self.p_str[i] != self.p_str[1]:
-                return i-1
-        return len(self.p_str)-1
+        if self.p_str[1] == "1":
+            return self.p_str[1:].find("0")
+        if self.p_str[1] == "0":
+            return self.p_str[1:].find("1")
+    
+    def regime_str(self) -> str:
+        return self.p_str[1: 1 + self.regime_len()]
 
     def rbar_len(self) -> int:
         if self.regime_len() + 1 == len(self.p_str):
             return 0
         else:
             return 1
+    
+    def rbar_str(self) -> str:
+        if self.rbar_len:
+            return self.p_str[1 + self.regime_len()]
+        else:
+            return ""
 
     def exp_len(self) -> int:
         rem = len(self.p_str) - 1 - self.regime_len() - self.rbar_len()
@@ -186,28 +183,16 @@ class posit_model():
             return rem
         else:
             return self.en
-
-    def frac_len(self) -> int:
-        return len(self.p_str) - (1 + self.regime_len() + self.rbar_len() + self.exp_len())
-
-    def sign_str(self) -> str:
-        return self.p_str[0]
-
-    def regime_str(self) -> str:
-        return self.p_str[1: 1 + self.regime_len()]
-
-    def rbar_str(self) -> str:
-        if self.rbar_len:
-            return self.p_str[1 + self.regime_len()]
-        else:
-            return ""
-    
+        
     def exp_str(self) -> str:
         if self.exp_len():
             return self.p_str[2 + self.regime_len(): 2 + self.regime_len() + self.exp_len()]
         else:
             return ""
 
+    def frac_len(self) -> int:
+        return len(self.p_str) - (1 + self.regime_len() + self.rbar_len() + self.exp_len())
+    
     def frac_str(self) -> str:
         if self.frac_len():
             return self.p_str[-self.frac_len():]
@@ -284,7 +269,8 @@ class posit_model():
     def from_float(self, x: float, n: int, es: int):
         dprint.debug(f"[{x}]")
         if x == float(0.0):
-            self.p_set(es, "0"*n)
+            self.en = es
+            self.p_str = "0"*n
             return 1
 
         ## grab sign and store
@@ -353,7 +339,8 @@ class posit_model():
         if sign == -1:
             posstr = twoc(posstr, len(posstr))
         dprint.debug(f" -> {posstr} {es}")
-        self.p_set(es, posstr)
+        self.en = es
+        self.p_str = posstr
 
 
     def __add__(self, other):
@@ -362,29 +349,22 @@ class posit_model():
 
         ## copy format specifiers
         es = self.en
-        n = len(self.p_str)
+        n = len(self.p_str) 
+        sf = 2**(es) # es # shift factor format defined
 
         dprint.debug(f"A: {self}, B: {other}")
-        dprint.debug(f"Approx {self.to_float()} + {other.to_float()}")
 
         ## extract signs, take the complement to get the positive form
-        a_sign = self.sign_i()
+        a_sign = 1 if self.sign_str() == "0" else -1
         if a_sign == -1:
-            self.p_set_complement()
-        b_sign = other.sign_i()
+            self.p_str = twoc(self.p_str, len(self.p_str))
+        b_sign = 1 if other.sign_str() == "0" else -1
         if b_sign == -1:
-            other.p_set_complement()
+            other.p_str = twoc(other.p_str, len(other.p_str))
         
         ## extract mantissa
         a_mantissa = self.frac_str()
         b_mantissa = other.frac_str()
-        ## debug printouts
-        a_mantissa_val = 0
-        if len(a_mantissa):
-            a_mantissa_val = 2**(-len(a_mantissa))*int(a_mantissa, 2)
-        b_mantissa_val = 0
-        if len(b_mantissa):
-            b_mantissa_val = 2**(-len(b_mantissa))*int(b_mantissa, 2)
 
         ## extract exponent
         a_exponent = self.exp_str()
@@ -394,14 +374,6 @@ class posit_model():
             a_exponent = "0"*(8-len(a_exponent)) + a_exponent
         if len(b_exponent) < 8: # sign extend
             b_exponent = "0"*(8-len(b_exponent)) + b_exponent
-
-        # debugs
-        a_exponent_val = 0
-        if len(a_exponent):
-            a_exponent_val = int(a_exponent, 2)
-        b_exponent_val = 0
-        if len(b_exponent):
-            b_exponent_val = int(b_exponent, 2)
 
         ## extract regime numeric values
         a_rbar = self.rbar_str()
@@ -428,7 +400,6 @@ class posit_model():
         ## Check which is bigger and shift to match
         ## if they are equal it doesn't really matter as shift will be 0
 
-        sf = 2**(es) # es # shift factor format defined
         frac_smol = ""
         frac_big = ""
         e_out = "11111111" # -1  pre-shift the p1 in 2C
@@ -513,7 +484,7 @@ class posit_model():
         if big_sign == -1 and smol_sign == -1:
             dprint.debug("Both negative - negate answer")
 
-        if (big_sign == 1 and smol_sign) == -1 or (big_sign == -1 and smol_sign == 1):
+        if (big_sign == 1 and smol_sign == -1) or (big_sign == -1 and smol_sign == 1):
             dprint.debug("Negative detected in sum")
             f_sum = bin(int(frac_big, 2) + int(frac_smol, 2))[2:]
             dprint.debug(f"Sum: {frac_big} + {frac_smol} = {f_sum}")
@@ -528,7 +499,6 @@ class posit_model():
 
             if len(f_sum) > len(frac_smol):
                 ## overflow case
-                #raise BaseException("Fraction Summation Overflow")
                 e_out = bin_add_s(e_out, "00000001")
             elif len(f_sum) <= len(frac_smol):
                 f_sum = (max(len(frac_smol), len(frac_big)) - len(f_sum))*"0" + f_sum
@@ -674,7 +644,7 @@ class posit_model():
         ## complement other and add
         a = self
         b = other
-        b.p_set_complement()
+        b.p_str = twoc(b.p_str, len(b.p_str))
         x = a + b
         return x
                 
@@ -684,7 +654,7 @@ if __name__ == "__main__":
     n = 7
     es = 1
 
-    a = posit_model(es, (1, n))
+    a = posit_model(es, (1.5, n))
     b = posit_model(es, (-1, n))
 
     dprint.debug(a.to_float())
