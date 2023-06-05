@@ -1,4 +1,4 @@
-module dff (clk, a, b, q);
+module posit_adder (clk, a, b, q);
 	parameter WIDTH=8;
 	input logic clk;
 	input logic signed [WIDTH-1:0] a, b;
@@ -16,5 +16,5 @@ end
 //   $dumpvars (0, signed_add);
 // end
 // `endif
-endmodule : dff
+endmodule : posit_adder
 
