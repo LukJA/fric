@@ -8,7 +8,7 @@ from cocotb.clock import Timer
 @cocotb.test()
 async def test_posit_adder_top(dut):
 
-    dut._log.info("Start")
+    dut._log.warning(f"Test {__name__} Starting...")
     # set a, b val
     dut.a.value = 0
     dut.b.value = 0
