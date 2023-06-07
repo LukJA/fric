@@ -1,3 +1,5 @@
+import common::*;
+
 module posit_adder #(
 	parameter WIDTH=7,
     parameter EN=1)(

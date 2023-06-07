@@ -1,6 +1,6 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1686045050" />
-    <testcase name="test_posit_adder_top" classname="test_posit_adder" file="/home/luke/Documents/fric/fric/hdl/test_posit_adder.py" lineno="8" time="0.0026717185974121094" sim_time_ns="35.001" ratio_time="13100.556336248437" />
+    <property name="random_seed" value="1686171313" />
+    <testcase name="test_count_leading_ones" classname="test_clo" file="/home/luke/Documents/fric/fric/hdl/test_clo.py" lineno="8" time="0.006246089935302734" sim_time_ns="1800.001" ratio_time="288180.448671807" />
   </testsuite>
 </testsuites>
