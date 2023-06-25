@@ -82,6 +82,10 @@ assign nought_masked = nought_mask & posit_reduced;
 assign frac_masked = frac_mask & posit_reduced;
 assign exp_masked = exp_mask & posit_reduced;
 
+// Both the fraction and the exponent require alignment
+// This is done with explicit generation of every version, and a muxing
+// selection of the correct desired position based on a MSB/LSB bit flag
+// This is likely faster than a CLO/CLZ tree and a barrell shifter
 
 // the fraction is missing it's leading 1 that signifies the point location
 // and needs to be aligned to the MSB, as it is right-expanding

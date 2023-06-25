@@ -1,7 +1,6 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1687708464" />
-    <testcase classname="test_decoder" file="/home/luke/Documents/fric/fric/hdl/test_decoder.py" lineno="8" name="test_decoder_a" ratio_time="70051.35651807934" sim_time_ns="200.001" time="0.002855062484741211" />
-    <testcase classname="test_decoder" file="/home/luke/Documents/fric/fric/hdl/test_decoder.py" lineno="36" name="test_decoder_b" ratio_time="13250.118374727532" sim_time_ns="200.001" time="0.015094280242919922" />
+    <property name="random_seed" value="1687726753" />
+    <testcase classname="test_posit_adder" file="/home/luke/Documents/fric/fric/hdl/test_posit_adder.py" lineno="9" name="test_posit_adder_top" ratio_time="2155.427925641388" sim_time_ns="40.001" time="0.018558263778686523" />
   </testsuite>
 </testsuites>
