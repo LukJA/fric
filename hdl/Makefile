@@ -2,18 +2,17 @@
 .DEFAULT_GOAL := testdff
 
 TOPLEVEL_LANG = verilog
-VERILOG_SOURCES += 	$(shell pwd)/sv/*.sv
-
+VERILOG_SOURCES = 	$(shell pwd)/sv/*.sv
 
 # Verilator
-SIM=icarus
+SIM=verilator
 # EXTRA_ARGS += -Isv
 # EXTRA_ARGS += --trace --trace-depth 5 --trace-structs --coverage
 COCOTB_HDL_TIMEUNIT = 1ns
 COCOTB_HDL_TIMEPRECISION = 1ps
 
 # Unit Test Targets
-testdff:
+testdff: 
 	rm -f -r sim_build
 	$(MAKE) sim MODULE=test_dff TOPLEVEL=dff
 
@@ -28,6 +27,14 @@ testclz:
 testclo:
 	rm -f -r sim_build
 	$(MAKE) sim MODULE=test_clo TOPLEVEL=count_lead_one
+
+testffo:
+	rm -f -r sim_build
+	$(MAKE) sim MODULE=test_ffo TOPLEVEL=find_first_one
+
+testffno:
+	rm -f -r sim_build
+	$(MAKE) sim MODULE=test_ffno TOPLEVEL=find_first_n_ones
 
 testcl: testclo testclz
 

@@ -18,7 +18,7 @@ generate
 
         logic all_zero;
         assign all_zero = ~(|a);
-        assign q = (all_zero) ? W_IN : leading_zeroes;
+        assign q = (all_zero) ? W_IN : {{W_OUT-$clog2(W_IN){1'b0}}, leading_zeroes};
 
     end else if (W_IN == 2) begin: base
         always_comb begin

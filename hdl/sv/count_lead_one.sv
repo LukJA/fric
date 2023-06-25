@@ -11,16 +11,16 @@ module count_lead_one #(
 );
 
 generate
-    if (__LEVEL == 1) begin: wrapper
+    if (__LEVEL == 1) begin: wrapper // TOP EXPANDER
 
         logic [$clog2(W_IN)-1:0] leading_ones;
         count_lead_one #(.W_IN(W_IN), .W_OUT($clog2(W_IN)), .__LEVEL(0)) clo (.a(a), .q(leading_ones));
 
         logic all_one;
         assign all_one = &a;
-        assign q = (all_one) ? W_IN : leading_ones;
+        assign q = (all_one) ? W_IN : {{W_OUT-$clog2(W_IN){1'b0}}, leading_ones};
 
-    end else if (W_IN == 2) begin: base
+    end else if (W_IN == 2) begin: base // BASE CASE
         always_comb begin
         case (a[1])
             1'b1    :  q = 1'b1;
@@ -28,7 +28,7 @@ generate
             default  :  q = 1'b0;
         endcase
         end
-    end else begin 
+    end else begin  // INTERIM LEVELS
         logic [W_OUT-2:0] half_count_rhs;
         logic [W_OUT-2:0] half_count_lhs;
 
