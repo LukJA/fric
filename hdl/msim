@@ -30,3 +30,7 @@ testcl: testclo testclz
 testdecoder:
 	rm -f -r sim_build
 	$(MAKE) -f mf_modelsim MODULE=test_decoder TOPLEVEL=work.format_decoder
+
+testadder:
+	rm -f -r sim_build
+	$(MAKE) -f mf_modelsim MODULE=test_posit_adder TOPLEVEL=work.posit_adder
