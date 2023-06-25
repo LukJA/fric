@@ -17,9 +17,11 @@ Verilator is fast, but smashes the hierarchy for debugging, and seems to fail to
 ### Modelsim-Intel
 Intel quartus modelsim is free and includes a GUI, but the free version is 32-bit, and is therefore incompatible with the 64-bit default python.
 
-$> conda create -n py3_32
-$> conda activate py3_32
-$> conda config --env --set subdir linux-32
-$> conda install python=3 gxx_linux-32
-$> pip install cocotb
-$> pip install pytest
+```bash
+$ conda create -n py3_32
+$ conda activate py3_32
+$ conda config --env --set subdir linux-32
+$ conda install python=3 gxx_linux-32
+$ pip install cocotb
+$ pip install pytest
+```

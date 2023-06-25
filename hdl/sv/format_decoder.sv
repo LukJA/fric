@@ -74,12 +74,56 @@ find_first_n_ones #(WIDTH-1, EN) ffnx (.a(r_unmask & ~nought_mask), .q(exp_mask)
 // finally the fraction is just the remaining mask
 assign frac_mask = r_unmask & (~nought_mask) & (~exp_mask);
 
-// `ifdef COCOTB_SIM
-// initial begin
-//   $dumpfile ("x.vcd");
-//   $dumpvars (0, format_decoder);
-//   #1;
-// end
-// `endif 
+// debug signals
+logic [WIDTH-2:0] nought_masked;
+logic [WIDTH-2:0] exp_masked;
+logic [WIDTH-2:0] frac_masked;
+assign nought_masked = nought_mask & posit_reduced;
+assign frac_masked = frac_mask & posit_reduced;
+assign exp_masked = exp_mask & posit_reduced;
 
-endmodule : format_decoder
+
+// the fraction is missing it's leading 1 that signifies the point location
+// and needs to be aligned to the MSB, as it is right-expanding
+
+// create an MSB+1 bit identifier
+logic [WIDTH-2:0] frac_MSB_bit;
+assign frac_MSB_bit[WIDTH-2] = frac_mask[WIDTH-2];
+genvar k;
+for (k = WIDTH-3; k >= 0; k--)
+    assign frac_MSB_bit[k] = (frac_mask[k] & ~frac_mask[k+1]);
+
+// Now generate all shifted versions of the frac region and select the right one
+logic [WIDTH-2:0] frac_shifted_array [WIDTH-2:0];
+logic [2*WIDTH-2:0] extended_f;
+assign extended_f =  {frac_mask & posit_reduced, {WIDTH{1'b0}}};
+genvar m;
+for (m = 0; m <= WIDTH-2; m++)
+    assign frac_shifted_array[m] = (frac_MSB_bit[m]==1'b1) ? extended_f[m+WIDTH:m+2] : 'b0;
+
+always_comb 
+    mantissa = {1'b1, frac_shifted_array.or(), {9-WIDTH-1{1'b0}}};
+
+// The exponent needs to be correctly shifted to remove trailing zeroes but 
+// can be right aligned as a valid whole number value
+
+// create a LSB bit identifier
+logic [WIDTH-2:0] exp_LSB_bit;
+assign exp_LSB_bit[0] = exp_mask[0];
+genvar j;
+for (j = 1; j <= WIDTH-2; j++)
+    assign exp_LSB_bit[j] = (exp_mask[j] & ~exp_mask[j-1]);
+
+// Now generate all shifted versions of the exp region and select the right one
+logic [2*WIDTH-2:0] extended_e;
+assign extended_e =  {{WIDTH{1'b0}}, exp_mask & posit_reduced};
+logic [WIDTH-2:0] exp_shifted_array [WIDTH-2:0];
+genvar l;
+for (l = 0; l <= WIDTH-2; l++)
+    assign exp_shifted_array[l] = (exp_LSB_bit[l]==1'b1) ? extended_e[WIDTH-2+l:l] : 'b0;
+
+always_comb 
+    exponent = {{9-WIDTH{1'b0}}, exp_shifted_array.or()};
+
+endmodule
+
