@@ -11,10 +11,13 @@ module posit_variable_decode #(
     output logic unsigned [width-2:0] fraction
 );
 
-    /* DECODE A VARIABLE WIDTH POSIT */
+    /* DECODE A VARIABLE WIDTH POSIT
+     * Any fixed/standard posit types (e.g. 32- or 64-bit)
+     * just need to be wrappers around this.
+     */
 
     always_comb sign = p[width-1];
 
-    
+    // start with a leading zeros/ones counter
 
 endmodule
