@@ -11,29 +11,29 @@
 # and test_hdl is the name of the rtl file
 
 # dff
-MODULE_testdff   := test_dff
-TOPLEVEL_testdff := dff
+MODULE_dff   	    := test_dff
+TOPLEVEL_dff 	    := dff
 
 # posit
-MODULE_posit   := test_posit_adder
-TOPLEVEL_posit := posit_adder
+MODULE_posit     	:= test_posit_adder
+TOPLEVEL_posit 		:= posit_adder
 
 # clz
-MODULE_clz   := test_clz
-TOPLEVEL_clz := count_lead_zero
+MODULE_clz   		:= test_clz
+TOPLEVEL_clz 		:= count_lead_zero
 
 # clo
-MODULE_clz   := test_clo
-TOPLEVEL_clz := count_lead_one
+MODULE_clo   		:= test_clo
+TOPLEVEL_clo 		:= count_lead_one
 
 # ffo
-MODULE_clz   := test_ffo
-TOPLEVEL_clz := find_first_one
+MODULE_ffo   		:= test_ffo
+TOPLEVEL_ffo 		:= find_first_one
 
 # ffno
-MODULE_clz   := test_ffno
-TOPLEVEL_clz := find_first_n_ones
+MODULE_ffno   		:= test_ffno
+TOPLEVEL_ffno 		:= find_first_n_ones
 
 # decoder
-MODULE_clz   := test_decoder
-TOPLEVEL_clz := format_decoder
+MODULE_decoder   	:= test_decoder
+TOPLEVEL_decoder 	:= format_decoder
