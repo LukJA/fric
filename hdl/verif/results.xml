@@ -1,8 +1,0 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1688932441" />
-    <testcase name="test_count_leading_zeros" classname="test_clz" file="/Users/harryfranks/Projects/fric/hdl/verif/test_clz.py" lineno="8" time="0.0003609657287597656" sim_time_ns="200.001" ratio_time="554071.9909537649">
-      <failure message="Test failed with RANDOM_SEED=1688932441" />
-    </testcase>
-  </testsuite>
-</testsuites>
