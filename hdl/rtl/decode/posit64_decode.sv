@@ -1,9 +1,9 @@
-import posit/posit_types::sign_t
+import posit/posit_types::*
 
 module posit32_decode #(
     parameter int unsigned es = 2
 ) (
-    input posit32_t p,
+    input posit64_t p,
 
     output sign_t sign,
     output logic signed [63:0] regime, exponent,

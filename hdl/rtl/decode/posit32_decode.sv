@@ -1,4 +1,4 @@
-import posit/posit_types::sign_t
+import posit/posit_types::*
 
 module posit32_decode #(
     parameter int unsigned es = 2

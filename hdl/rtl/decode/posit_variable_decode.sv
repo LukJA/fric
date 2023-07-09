@@ -1,8 +1,8 @@
-import posit/posit_types::*
+import posit/posit_types::sign_t
 
 module posit_variable_decode #(
     parameter int unsigned width = 32,
-    parameter int unsigned es    = 1
+    parameter int unsigned es    = 2
 ) (
     input logic [width-1:0] p,
 
