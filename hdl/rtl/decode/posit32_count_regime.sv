@@ -17,11 +17,11 @@ module posit32_count_regime (
     logic [15:0] c;
 
     generate
-        for (genvar i = 0; i < 15; i++) begin
-            count_leading_encoder(leading = b) i_count_leading_encoder (
+        for (genvar i = 0; i < 30; i += 2) begin
+            priority_encoder_4 i_priority_encoder_2 (
                 .leading_bit(v[29]),
-                .i(v[2*i + 1: 2*i]),
-                .o(v_enc[2*i + 1: 2*i])
+                .i(v[i+1:i]),
+                .o(v_enc[i+1:i])
             )
         end
     endgenerate

@@ -1,5 +1,5 @@
 # SV COCO MakeFile
-.DEFAULT_GOAL := testdff
+.DEFAULT_GOAL := cocotb
 
 TOPLEVEL_LANG = verilog
 VERILOG_SOURCES = $(shell pwd)/../rtl/*.sv
