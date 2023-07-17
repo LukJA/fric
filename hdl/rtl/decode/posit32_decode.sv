@@ -13,12 +13,12 @@ module posit32_decode #(
     /* setting the sign bit is trivial */
     always_comb sign = p.sign;
 
-    posit_variable_decode(32, es) i_posit_variable_decode(
+    posit_variable_decode #(32, es) i_posit_variable_decode(
         .p(p),
         .sign(sign),
         .regime(regime),
         .exponent(exponent),
         .fraction(fraction)
-    )
+    );
 
 endmodule

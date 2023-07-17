@@ -12,12 +12,12 @@ package posit_types;
 
     typedef struct packed {
         sign_t s;
-        logic [30:0] ref;
+        logic [30:0] ref_block;
     } posit32_t;
 
     typedef struct packed {
         sign_t s;
-        logic [62:0] ref;
+        logic [62:0] ref_block;
     } posit64_t;
 
 endpackage
