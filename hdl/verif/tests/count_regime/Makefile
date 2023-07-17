@@ -1,4 +1,4 @@
-.DEFAULT_GOAL := test_pe_2
+.DEFAULT_GOAL := test_regime
 
 TOPLEVEL_LANG = verilog
 VERILOG_SOURCES = \
@@ -13,6 +13,10 @@ COCOTB_HDL_TIMEPRECISION = 1ps
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
-test_pe_2:
+test_regime:
 	rm -rf sim_build
 	$(MAKE) sim MODULE=test_count_regime TOPLEVEL=posit32_regime_tb
+
+test_16b:
+	rm -rf sim_build
+	$(MAKE) sim MODULE=test_16b_count TOPLEVEL=count_regime_16

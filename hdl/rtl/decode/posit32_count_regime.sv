@@ -1,7 +1,8 @@
 import posit_types::*;
 
 module count_regime_16 (
-    input  logic [15:0] in,
+    input  logic leading_bit,
+    input  logic [15:0] i,
 
     output logic [3:0] c,
     output logic valid
@@ -14,8 +15,8 @@ module count_regime_16 (
     generate
         for (genvar j = 0; j < 4; j += 1) begin
             priority_encoder_4 i_priority_encoder_4 (
-                .leading_bit( in[15] ),
-                .slice( in[ (4*j) +: 4 ] ),
+                .leading_bit( leading_bit ),
+                .slice( i[ (4*j) +: 4 ] ),
                 .count( counts[j] ),
                 .valid( valids[j] )
             );
@@ -29,7 +30,7 @@ module count_regime_16 (
         );
 
         mux #( .WIDTH(2), .NUM_INPUTS(4) ) i_mux(
-            .sel( select ),
+            .sel( ~select ),
             .i( counts ),
             .o( c[1:0] )
         );
@@ -86,23 +87,22 @@ module posit32_count_regime (
         for (genvar j = 0; j < 2; j++) begin
 
             count_regime_16 i_count_regime_16(
-                .in( intr_v[ (16*j) +: 16 ] ),
+                .leading_bit( intr_v[31] ),
+                .i( intr_v[ (16*j) +: 16 ] ),
                 .c( counts[j] ),
                 .valid( valids[j] )
             );
 
         end
 
-        /* FIXME: mux ordering and offset bits are broken! */
-
         priority_encoder_2 i_priority_encoder_2 (
-            .slice( {<<2{valids}} ), // FIXME: is this the correct way round?
+            .slice( valids ),
             .count( select ),
             .valid( valid )
         );
 
         mux #( .WIDTH(4), .NUM_INPUTS(2) ) i_mux_2(
-            .sel( select ),
+            .sel( ~select ),
             .i( counts ),
             .o( c[3:0] )
         );

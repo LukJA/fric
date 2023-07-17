@@ -1,27 +1,17 @@
 import cocotb
-from cocotb.triggers import Timer
-from cocotb.binary import BinaryValue
+from test_value import test_value
 
-async def test_value(dut, bin_str):
-    dut.i.value = BinaryValue(bin_str)
-
-    await Timer(100, "ns")
-    
-    dut._log.info(f"Input: {bin_str}")
-    dut._log.info(f"Output: {dut.c.value}")
-    dut._log.info(f" Valid: {dut.valid.value}")
-
-    # assert dut.c.value == bin_str[1:].index('1')
+async def test_32b(dut, bin_str):
+    await test_value(dut, bin_str[1] + bin_str[1:])
 
 @cocotb.test()
 async def test_count_regime(dut):
     dut._log.warning(f"Test {__name__} Starting...")
 
-    await test_value(dut, "10001000100010001000100010001000")
-    await test_value(dut, "00001000100010001000100010001000")
-    await test_value(dut, "00000000100010001000100010001000")
-    await test_value(dut, "00000000000000000000000000000000")
+    # NOTE: these have an offset of 1 for the sign bit,
+    #       so values computed aren't correct...
 
-    assert False
-    
-
+    await test_32b(dut, "10001000100010001000100010001000")
+    await test_32b(dut, "00001000100010001000100010001000")
+    await test_32b(dut, "00000000100010001000100010001000")
+    await test_32b(dut, "00000000000000000000000000000000")
