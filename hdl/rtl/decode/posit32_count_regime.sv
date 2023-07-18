@@ -59,23 +59,23 @@ module posit32_count_regime (
     logic select;
 
     // basically sign extend by 1 bit
-    assign intr_v[31] = i.ref_block[30];
-    assign intr_v[30:0] = i.ref_block;
+    assign intr_v[31:1] = i.ref_block;
+    assign intr_v[0] = i.ref_block[30];
 
     /* we can't use recursive statement because verilator is a pain, so instead
        we construct a balanced mux tree from sets of pre-defined priority
        encoders */
     /* our tree looks like this:
 
-        --4--[PE]--3--[       ]
-        --4--[PE]--3--[ 4-way ]--4--+
-        --4--[PE]--3--[  mux  ]     |
-        --4--[PE]--3--[       ]     +--[ bit shift + ]
-                                       [    2-way    ]---5---
-        --4--[PE]--3--[       ]     +--[     mux     ]
-        --4--[PE]--3--[ 4-way ]     |
-        --4--[PE]--3--[  mux  ]--4--+
-        --4--[PE]--3--[       ]
+        ---4---[PE]--2--[   bit   ]
+        ---4---[PE]--2--[ shift + ]--4--+
+        ---4---[PE]--2--[  4-way  ]     |
+        ---4---[PE]--2--[   mux   ]     +--[ bit shift + ]
+                                           [    2-way    ]---5---
+        ---4---[PE]--2--[   bit   ]     +--[     mux     ]
+        ---4---[PE]--2--[ shift + ]     |
+        ---4---[PE]--2--[  4-way  ]--4--+
+        ---4---[PE]--2--[   mux   ]
 
        where the muxes are selected through priority encoding of valid bits.
 
