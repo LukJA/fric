@@ -1,5 +1,12 @@
-# fric
-Finite-Response-Impulse-Computer
+<p align="center">
+	<img width="300px" src="logo/logo_prototype_2.png">
+	<h1 align="center">
+        <b>F</b>inite
+        <b>R</b>esponse
+        <b>I</b>mpulse
+        <b>C</b>omputer
+    </h1>
+</p>
 
 ### Usage
 For 32 bit free modelsim, get a 32 conda python and cocotb enviroment. Unit tests are all defined and called by the msim makefile
