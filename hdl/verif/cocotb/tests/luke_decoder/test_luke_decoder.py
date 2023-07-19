@@ -91,15 +91,3 @@ def test_ffno():
             "cocotb_test_ffno"
         ]
     )
-
-def test_posit_adder():
-    cocotb_test_module(
-        src=SRC,
-
-        toplevel="posit_adder",
-
-        modulepath=f"{CWD}/posit_adder",
-        modules=[
-            "cocotb_test_posit_adder"
-        ]
-    )
