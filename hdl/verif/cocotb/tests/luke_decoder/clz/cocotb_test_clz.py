@@ -1,6 +1,4 @@
 import cocotb
-from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly
 from cocotb.triggers import Timer
 from cocotb.binary import BinaryValue
 

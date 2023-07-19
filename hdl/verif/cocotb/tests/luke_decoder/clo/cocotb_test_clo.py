@@ -1,12 +1,9 @@
 import cocotb
-from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly
 from cocotb.triggers import Timer
 from cocotb.binary import BinaryValue
 
-
 @cocotb.test()
-async def test_count_leading_ones(dut):
+async def count_leading_ones(dut):
     dut._log.warning(f"Test {__name__} Starting...")
 
     for i in range(0, 9):
@@ -28,7 +25,3 @@ async def test_count_leading_ones(dut):
         await Timer(100, "ns")
         dut._log.info(f"Output: {dut.q.value}")
         assert dut.q.value == i
-
-
-
-
