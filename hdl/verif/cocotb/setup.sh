@@ -2,6 +2,11 @@ echo $0
 echo $(dirname -- $0)
 echo $(pwd -P)
 
+echo
+echo $(realpath $0)
+echo $( dirname "$(realpath $0)" )
+echo
+
 export COCOTB_TOP=$( cd $(dirname -- "$0") && pwd -P )
 echo COCOTB_TOP: $COCOTB_TOP
 export RTL_TOP=$( cd $COCOTB_TOP/../../rtl && pwd -P)
