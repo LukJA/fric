@@ -158,7 +158,7 @@ The folder structure within should mirror that of the `tests/` folder,
 and within each module's named folder are two important files: `dump.vcd`,
 containing waves, and `coverage.dat`, containing test coverage information.
 
-### Peeking under the hood
+### Peeking Under the Hood
 
 To understand how and why this structure works, let's first discuss the
 design philosophy behind it. Cocotb allows for, in effect, each toplevel to map
