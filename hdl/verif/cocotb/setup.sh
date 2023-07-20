@@ -25,3 +25,5 @@ export SIM=verilator
 export SIM_BUILD_ARGS="--trace --coverage"
 
 export PYTHONPATH="${COCOTB_TOP}:${PYTHONPATH}"
+
+if [ -f setup.user.sh ]; then source setup.user.sh ; fi
