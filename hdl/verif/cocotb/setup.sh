@@ -22,3 +22,5 @@ export TOPLEVEL_LANG=verilog
 # export VERILOG_SOURCES=$(find ${RTL_TOP} -type f -name '*.sv')
 
 export SIM=verilator
+
+export PYTHONPATH="${COCOTB_TOP}:${PYTHONPATH}"

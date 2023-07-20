@@ -13,7 +13,8 @@ VERILOG_SOURCES = os.getenv("VERILOG_SOURCES", "").split(" ")
 SIM = os.getenv("SIM")
 
 if SIM is None:
-    raise Exception("SIM undefined!")
+    print("Error: SIM undefined!", file=sys.stderr)
+    sys.exit(1)
 
 
 def cocotb_test_module(src, toplevel, modulepath, modules):

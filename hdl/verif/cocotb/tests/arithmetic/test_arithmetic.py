@@ -1,15 +1,12 @@
 import sys, os
 import glob
 
-COCOTB_TOP = os.getenv("COCOTB_TOP")
-if COCOTB_TOP is None:
-    raise Exception(
-        "COCOTB_TOP not found. Please run `source setup.sh` from verif/cocotb."
-    )
-
-sys.path.append(COCOTB_TOP)
-
-from cocotb_setup import *
+try:
+    from cocotb_setup import *
+except ModuleNotFoundError:
+    sys.exit("Error: incorrect configuration! "
+             "Please run `source setup.sh` from verif/cocotb.")
+    
 
 CWD = os.path.dirname(os.path.realpath(__file__))
 
