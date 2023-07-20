@@ -34,7 +34,7 @@ def cocotb_test_module(src, toplevel, modulepath, modules):
         hdl_toplevel=toplevel,
         always=True,
         build_args=SIM_BUILD_ARGS,
-        build_dir=f"{COCOTB_TOP}/sim_build/{subpath}/toplevel"
+        build_dir=f"{COCOTB_TOP}/sim_build/{subpath}/{toplevel}"
     )
 
     runner.test(hdl_toplevel=toplevel, test_module=modules)
