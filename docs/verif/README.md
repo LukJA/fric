@@ -1,6 +1,6 @@
 <img width="100px" align=right src="../../logo/logo_prototype_2.png">
 
-# Introduction to fric's verification methodology
+# A Brief Introduction to fric's Verification Methodology
 
 fric supports two main verification platforms: python-based verification
 with cocotb, and traditional systemverilog testbenches with modelsim.
