@@ -14,10 +14,10 @@ CWD = os.path.dirname(os.path.realpath(__file__))
 def test_priority_encoder():
     cocotb_test_module(
         src=[
-            f"{RTL_TOP}/posit/posit_types.sv",
-            f"{RTL_TOP}/decode/util/mux.sv",
-            f"{RTL_TOP}/decode/util/priority_encoders.sv",
-            f"{RTL_TOP}/decode/posit32_count_regime.sv",
+            f"{RTL_TOP}/typedef/posit_types.sv",
+            f"{RTL_TOP}/decode/henry_decoder/util/mux.sv",
+            f"{RTL_TOP}/decode/henry_decoder/util/priority_encoders.sv",
+            f"{RTL_TOP}/decode/henry_decoder/posit32_count_regime.sv",
             f"{CWD}/priority_encoder/priority_encoder_16_tb.sv",
         ],
 
@@ -32,10 +32,10 @@ def test_priority_encoder():
 def test_count_regime():
     cocotb_test_module(
         src=[
-            f"{RTL_TOP}/posit/posit_types.sv",
-            f"{RTL_TOP}/decode/util/mux.sv",
-            f"{RTL_TOP}/decode/util/priority_encoders.sv",
-            f"{RTL_TOP}/decode/posit32_count_regime.sv",
+            f"{RTL_TOP}/typedef/posit_types.sv",
+            f"{RTL_TOP}/decode/henry_decoder/util/mux.sv",
+            f"{RTL_TOP}/decode/henry_decoder/util/priority_encoders.sv",
+            f"{RTL_TOP}/decode/henry_decoder/posit32_count_regime.sv",
             f"{CWD}/count_regime/posit32_count_regime_tb.sv",
         ],
 

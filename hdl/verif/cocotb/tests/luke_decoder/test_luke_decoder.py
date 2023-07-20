@@ -12,14 +12,18 @@ CWD = os.path.dirname(os.path.realpath(__file__))
 
 ###############################################################################
 
-SRC = glob.glob(f"{RTL_TOP}/*.sv")
-
-# move common.sv to start because importing is a pain
-SRC.insert(0, SRC.pop(SRC.index(f"{RTL_TOP}/common.sv")))
+SRC = (
+    [
+        f"{RTL_TOP}/typedef/common.sv",
+        f"{RTL_TOP}/alu/comparator.sv",
+        f"{RTL_TOP}/alu/two_comp.sv"
+    ]
+    + glob.glob(f"{RTL_TOP}/decode/luke_decoder/*.sv")
+)
 
 def test_dff():
     cocotb_test_module(
-        src=SRC,
+        src=[f"{RTL_TOP}/dff.sv"],
 
         toplevel="dff",
 
