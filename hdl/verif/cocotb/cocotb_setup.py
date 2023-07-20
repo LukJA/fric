@@ -19,6 +19,9 @@ if SIM is None:
 
 SIM_BUILD_ARGS=os.getenv("SIM_BUILD_ARGS", "").split(" ")
 
+# FIXME: could we share runner per import to improve runtime?
+#       i.e. call runner=get_runner(SIM) up here, then
+#            just reference it within the function?
 
 def cocotb_test_module(src, toplevel, modulepath, modules):
     sys.path.append(modulepath)
