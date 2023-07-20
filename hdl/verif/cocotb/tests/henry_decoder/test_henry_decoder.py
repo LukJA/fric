@@ -17,10 +17,11 @@ def test_priority_encoder():
             f"{RTL_TOP}/posit/posit_types.sv",
             f"{RTL_TOP}/decode/util/mux.sv",
             f"{RTL_TOP}/decode/util/priority_encoders.sv",
-            f"{RTL_TOP}/decode/posit32_count_regime.sv"
+            f"{RTL_TOP}/decode/posit32_count_regime.sv",
+            f"{CWD}/priority_encoder/priority_encoder_16_tb.sv",
         ],
 
-        toplevel="count_regime_16",
+        toplevel="priority_encoder_16_tb",
 
         modulepath=f"{CWD}/priority_encoder",
         modules=[
@@ -34,10 +35,11 @@ def test_count_regime():
             f"{RTL_TOP}/posit/posit_types.sv",
             f"{RTL_TOP}/decode/util/mux.sv",
             f"{RTL_TOP}/decode/util/priority_encoders.sv",
-            f"{RTL_TOP}/decode/posit32_count_regime.sv"
+            f"{RTL_TOP}/decode/posit32_count_regime.sv",
+            f"{CWD}/count_regime/posit32_count_regime_tb.sv",
         ],
 
-        toplevel="posit32_regime_tb",
+        toplevel="posit32_count_regime_tb",
 
         modulepath=f"{CWD}/count_regime",
         modules=[
