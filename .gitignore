@@ -193,3 +193,7 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+hdl/verif/cocotb/pytest_report.xml
+hdl/verif/cocotb/setup.user.sh
+

@@ -33,11 +33,14 @@ jobs:
       working-directory: ./hdl/verif/cocotb
       run: |
         source setup.sh
-        pytest
+        pytest --junitxml=pytest_report.xml
 
     - name: Generate report
       if: always()
-      run: echo '# Hello world' >> $GITHUB_STEP_SUMMARY
+      working-directory: ./hdl/verif/cocotb
+      run: |
+          python3 process_results.py >> $GITHUB_STEP_SUMMARY
+
 
   verif_msim:
     runs-on: ubuntu-22.04
