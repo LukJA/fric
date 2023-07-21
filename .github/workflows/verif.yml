@@ -26,6 +26,10 @@ jobs:
         source setup.sh
         pytest
 
+    - name: Generate report
+      if: always()
+      run: echo '# Hello world' >> $GITHUB_STEP_SUMMARY
+
   verif_msim:
     runs-on: ubuntu-22.04
 
