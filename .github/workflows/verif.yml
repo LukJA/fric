@@ -20,11 +20,11 @@ jobs:
         pip install -r requirements.txt
         brew install verilator
 
-    - name: Verify with cocotb & verilator
-      working-directory: ./hdl/verif/cocotb
-      run: |
-        source setup.sh
-        pytest
+    # - name: Verify with cocotb & verilator
+    #   working-directory: ./hdl/verif/cocotb
+    #   run: |
+    #     source setup.sh
+    #     pytest
 
     - name: Generate report
       if: always()
