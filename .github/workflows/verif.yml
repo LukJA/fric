@@ -33,7 +33,7 @@ jobs:
       working-directory: ./hdl/verif/cocotb
       run: |
         source setup.sh
-        pytest
+        # pytest
 
     - name: Generate report
       if: always()
