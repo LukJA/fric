@@ -15,6 +15,15 @@ jobs:
         python-version: 3.9
         cache: 'pip'
 
+    - name: Set up Homebrew cache (verilator only)
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/Library/Caches/Homebrew/verilator--*
+          ~/Library/Caches/Homebrew/downloads/*--verilator-*
+        key: brew-verilator
+        restore-keys: brew-
+
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
