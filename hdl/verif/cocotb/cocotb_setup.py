@@ -1,6 +1,7 @@
 import os, sys
 from cocotb.runner import get_runner
 
+
 COCOTB_TOP = os.getenv("COCOTB_TOP")
 RTL_TOP = os.getenv("RTL_TOP")
 
@@ -14,14 +15,14 @@ VERILOG_SOURCES = os.getenv("VERILOG_SOURCES", "").split(" ")
 SIM = os.getenv("SIM")
 
 if SIM is None:
-    print("Error: SIM undefined!", file=sys.stderr)
-    sys.exit(1)
+    sys.exit("Error: SIM undefined!")
 
 SIM_BUILD_ARGS=os.getenv("SIM_BUILD_ARGS", "").split(" ")
 
 # FIXME: could we share runner per import to improve runtime?
 #       i.e. call runner=get_runner(SIM) up here, then
 #            just reference it within the function?
+
 
 def cocotb_test_module(src, toplevel, modulepath, modules):
     sys.path.append(modulepath)
