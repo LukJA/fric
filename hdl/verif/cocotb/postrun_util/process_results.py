@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 
-tree = ET.parse('pytest_report.xml')
+tree = ET.parse('../pytest_report.xml')
 root = tree.getroot()
 
 print('# Test Results')
@@ -32,7 +32,7 @@ for test in root[0]:
     mod_name = module_name[split_idx+1:]
     dir_name = test_name.replace('test_', '')
     result_filename = (
-        f"sim_build/{mod_path}/{dir_name}/{test_name}.results.xml"
+        f"../sim_build/{mod_path}/{dir_name}/{test_name}.results.xml"
     )
 
     if mod_path not in modules:
@@ -42,7 +42,7 @@ for test in root[0]:
     modules[mod_path].append(
         {
             "test_name": test_name,
-            "filename": result_filename
+            "filename": result_filename,
         }
     )
 
@@ -53,7 +53,8 @@ for test in root[0]:
 print("\n---\n")
 print("### Results")
 
-for item in modules:
+
+for item in modules:  # pylint: disable=C0206
     print("<details>")
     print("<summary>")
     print(f"Detailed results for <tt>{item}</tt> ")
@@ -77,18 +78,52 @@ for item in modules:
 
         test_root = test_tree.getroot()
         print("<table>")
-        print("<tr><td><b>Test</b></td><td><b>Result</b></td></tr>")
+        print("<tr><td><b>Test</b></td><td><b>Result</b></td><td><b>Message</b></td></tr>")
+
+        errors = {}
+        to_process = {}
+
+        with open(f"../logs/generated/{item}/{test['test_name']}.log") as logfile:
+            for i, line in enumerate(logfile):
+                if 'failed' in line:
+                    test_name = line.split(' ')[-2]
+                    line_no = i + 2
+                    error_no = i + 3
+
+                    errors[test_name] = ""
+                    to_process[line_no] = test_name
+                    to_process[error_no] = test_name
+                    
+                if i in to_process:
+                    if errors[to_process[i]] == "":
+                        errors[to_process[i]] = line.strip()
+                    else:
+                        errors[to_process[i]] += '<br />' + line.strip()
+                    del to_process[i]
 
         for subtest in test_root[0]:
             if subtest.tag == "testcase":
                 st_name = subtest.attrib['name']
-                st_passed = (
-                    "<td bgcolor='green' style='color: white'>PASS</td>"
-                    if len(subtest) == 0 else
-                    "<td bgcolor='red' style='color: white'>FAIL</td>"
-                )
-                print(f"<tr><td>{st_name}</td>{st_passed}</tr>")
+
+                if len(subtest) == 0:
+                    print(
+                        f"<tr>"
+                        f"<td>{st_name}</td>"
+                        f"<td>PASS</td>"
+                        f"<td></td>"
+                        f"</tr>"
+                    )
+                else:
+                    print(
+                        f"<tr>"
+                        f"<td>{st_name}</td>"
+                        f"<td><b>FAIL</b></td>"
+                        f"<td>{errors[st_name]}</td>"
+                        f"</tr>"
+                    )
+                
         print("</table>")
+
     print("<br />")
     
     print("</details>")

@@ -33,12 +33,13 @@ jobs:
       working-directory: ./hdl/verif/cocotb
       run: |
         source setup.sh
-        pytest --junitxml=pytest_report.xml --report-log=logs/test.log
+        pytest --junitxml=pytest_report.xml --report-log=logs/pytest.log
 
     - name: Generate report
       if: always()
-      working-directory: ./hdl/verif/cocotb
+      working-directory: ./hdl/verif/cocotb/postrun_util
       run: |
+          python3 generate_logs.py
           python3 process_results.py >> $GITHUB_STEP_SUMMARY
 
 
