@@ -88,11 +88,11 @@ for item in modules:  # pylint: disable=C0206
                 if 'failed' in line:
                     test_name = line.split(' ')[-2]
                     line_no = i + 2
-                    error_no = i + 3
 
                     errors[test_name] = ""
                     to_process[line_no] = test_name
-                    to_process[error_no] = test_name
+                    to_process[line_no+1] = test_name
+                    to_process[line_no+2] = test_name
                     
                 if i in to_process:
                     if errors[to_process[i]] == "":
