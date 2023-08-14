@@ -1,8 +1,10 @@
-module dff (clk, a, b, q);
-	parameter WIDTH=8;
-	input logic clk;
-	input logic signed [WIDTH-1:0] a, b;
-	output logic signed [WIDTH-1:0] q;	
+module dff #(
+	parameter WIDTH=8
+) (
+	input logic clk,
+	input logic signed [WIDTH-1:0] a, b,
+	output logic signed [WIDTH-1:0] q
+);
 
 // assign q = a + b;
 

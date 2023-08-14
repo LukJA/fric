@@ -1,0 +1,51 @@
+name: Verification
+
+on: [push]
+
+jobs:
+  verif_cocotb:
+    runs-on: macos-13
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+        cache: 'pip'
+
+    - name: Set up Homebrew cache (verilator only)
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/Library/Caches/Homebrew/verilator--*
+          ~/Library/Caches/Homebrew/downloads/*--verilator-*
+        key: brew-verilator
+        restore-keys: brew-
+
+    - name: Install dependencies
+      run: |
+        pip --disable-pip-version-check install -r requirements.txt
+        HOMEBREW_NO_INSTALL_CLEANUP=1 brew install verilator
+
+    - name: Verify with cocotb & verilator
+      working-directory: ./hdl/verif/cocotb
+      run: |
+        source setup.sh
+        pytest --junitxml=pytest_report.xml --report-log=logs/pytest.log
+
+    - name: Generate report
+      if: always()
+      working-directory: ./hdl/verif/cocotb/postrun_util
+      run: |
+          python3 generate_logs.py
+          python3 process_results.py >> $GITHUB_STEP_SUMMARY
+
+
+  verif_msim:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+    
