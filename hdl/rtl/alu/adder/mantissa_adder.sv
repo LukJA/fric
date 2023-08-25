@@ -7,7 +7,9 @@ module mantissa_adder #(
     input logic signed [7:0] a_regime, a_exponent,
     input logic unsigned [7:0] a_mantissa,
     input logic signed [7:0] b_regime, b_exponent, 
-    input logic unsigned [7:0] b_mantissa
+    input logic unsigned [7:0] b_mantissa,
+    output logic unsigned [7:0] mantissa_sum,
+    output logic signed [7:0] interim_regime, interim_exponent
     );
 
 logic big_sign, small_sign;
@@ -24,13 +26,14 @@ comparator u_comp (.a_sign(a_sign), .b_sign(b_sign),
 					.small_regime(small_regime), .small_exponent(small_exponent), .small_mantissa(small_mantissa));
 
 // collect the interim values
-logic signed [7:0] interim_regime, interim_exponent;
 assign interim_regime = big_regime;
 assign interim_exponent = big_exponent - 1;
 
 // calulate the necessary addition offsets
-logic signed [7:0] delta_regime, delta_exponent, shamt;
+logic signed [7:0] shamt;
 logic signed [7:0] small_mantissa_sh;
+logic signed [7:0] delta_regime, delta_exponent;
+
 assign delta_regime = big_regime - small_regime;
 assign delta_exponent = big_exponent - small_exponent;
 assign shamt = (delta_regime<<EN) + delta_exponent;
@@ -45,6 +48,11 @@ case ({big_sign,small_sign})
     default: small_mantissa_sh_alt = small_mantissa_sh;
 endcase
 
+// sum the final fraction sections
+logic signed [7:0] s_mantissa_sum;
+assign s_mantissa_sum = big_mantissa + small_mantissa_sh_alt;
+assign mantissa_sum = s_mantissa_sum;
 
+// this is enough for the second stage, return data
 endmodule : mantissa_adder
 

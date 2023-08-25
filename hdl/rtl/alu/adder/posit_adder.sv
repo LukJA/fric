@@ -63,13 +63,51 @@ end
 
 // stage 2 - bigger/smaller and fraction addition
 
+logic signed [7:0] interim_regime, interim_exponent; 
+logic unsigned [7:0] mantissa_sum; 
+
 mantissa_adder #(WIDTH,EN) mant_add (.a_sign(dc_a_sign), .b_sign(dc_b_sign),
 									.a_regime(dc_a_regime), 
 									.a_exponent(dc_a_exponent),
 									.a_mantissa(dc_a_mantissa),
 									.b_regime(dc_b_regime), 
 									.b_exponent(dc_b_exponent),
-									.b_mantissa(dc_b_mantissa));
+									.b_mantissa(dc_b_mantissa),
+									.mantissa_sum(mantissa_sum),
+									.interim_regime(interim_regime),
+									.interim_exponent(interim_exponent)
+									);
+
+
+// second pipeline register
+
+logic signed [7:0] cn_interim_regime, cn_interim_exponent; 
+logic signed [7:0] cn_mantissa_sum; 
+
+always_ff @(posedge clk) begin
+	if (~rst) begin
+		cn_interim_regime <= 'b0;
+		cn_interim_exponent <= 'b0;
+		cn_mantissa_sum <= 'b0;
+	end else begin	
+		cn_interim_regime <= interim_regime;
+		cn_interim_exponent <= interim_exponent;
+		cn_mantissa_sum <= mantissa_sum;
+	end
+end
+
+// stage 3 - normalisation
+
+logic signed [7:0] mantissa_norm;
+logic signed [7:0] regime_norm, exponent_norm;
+
+normalise #(WIDTH,EN) p_norm (.mantissa_sum(cn_mantissa_sum),
+								.interim_regime(cn_interim_regime),
+								.interim_exponent(cn_interim_exponent),
+								.mantissa(mantissa_norm),
+								.regime(regime_norm),
+								.exponent(exponent_norm)
+								);
 
 assign q = a + b;
 
