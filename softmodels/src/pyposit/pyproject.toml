@@ -1,0 +1,11 @@
+[project]
+name = "pyposit"
+version = "0.0.1"
+authors = [
+    {name = "Luke Andrews"},
+    {name = "Henry Franks"},
+    {name = "Harry Rodgers"},
+]
+
+[tool.setuptools.packages]
+find = {}
