@@ -1,0 +1,36 @@
+# Makefile
+.DEFAULT_GOAL := testdff
+
+testdff: 
+	rm -f -r sim_build
+	$(MAKE) -f mf_modelsim MODULE=test_dff TOPLEVEL=work.dff
+
+testposit:
+	rm -f -r sim_build
+	$(MAKE) -f mf_modelsim MODULE=test_posit_adder TOPLEVEL=work.posit_adder
+
+testclz:
+	rm -f -r sim_build
+	$(MAKE) -f mf_modelsim MODULE=test_clz TOPLEVEL=work.count_lead_zero
+
+testclo:
+	rm -f -r sim_build
+	$(MAKE) -f mf_modelsim MODULE=test_clo TOPLEVEL=work.count_lead_one
+
+testffo:
+	rm -f -r sim_build
+	$(MAKE) -f mf_modelsim MODULE=test_ffo TOPLEVEL=work.find_first_one
+
+testffno:
+	rm -f -r sim_build
+	$(MAKE) -f mf_modelsim MODULE=test_ffno TOPLEVEL=work.find_first_n_ones
+
+testcl: testclo testclz
+
+testdecoder:
+	rm -f -r sim_build
+	$(MAKE) -f mf_modelsim MODULE=test_decoder TOPLEVEL=work.format_decoder
+
+testadder:
+	rm -f -r sim_build
+	$(MAKE) -f mf_modelsim MODULE=test_posit_adder TOPLEVEL=work.posit_adder
