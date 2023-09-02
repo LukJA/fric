@@ -1,5 +1,5 @@
 [project]
-name = "pyposit"
+name = "fric"
 version = "0.0.1"
 authors = [
     {name = "Luke Andrews"},
@@ -7,5 +7,6 @@ authors = [
     {name = "Harry Rodgers"},
 ]
 
-[tool.setuptools.packages]
-find = {}
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false

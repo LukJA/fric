@@ -22,4 +22,3 @@ class PyPosit:
     def from_float(cls, cfg: PyPositConfig, val: float):
         """Factory method to create bit string from float."""
         return cls(cfg, "")
-    
