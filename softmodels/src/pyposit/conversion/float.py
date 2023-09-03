@@ -1,15 +1,7 @@
 from math import isinf
-from dataclasses import dataclass
 
-
-@dataclass
-class PyPositConfig:
-    n_bits: int
-    es: int
-
-def pyposit_from_float(f: float, cfg: PyPositConfig) -> str:
-    n_bits = cfg.n_bits
-    es = cfg.es
+def float_to_posit(f: float, *, n: int = 32, es: int = 2) -> str:
+    n_bits = n
     useed = pow(2, pow(2, es))
 
     y = abs(f)
@@ -53,3 +45,6 @@ def pyposit_from_float(f: float, cfg: PyPositConfig) -> str:
     while e > 0.5 and i <= n_bits:
         p *= 2
         
+def posit_to_float(p: str, *, n: int = 32, es: int = 2) -> float:
+    """Generate float from posit string."""
+    return 0.0  # FIXME

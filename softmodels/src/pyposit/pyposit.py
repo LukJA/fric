@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from .operations.arithmetic import bin_add_s, bin_sub_s
 from .operations.logic import twoc
+from .conversion.float import float_to_posit, posit_to_float
 
 @dataclass
 class PyPositConfig:
@@ -31,12 +32,12 @@ class PyPosit:
     @classmethod
     def from_float(cls, cfg: PyPositConfig, val: float):
         """Factory method to create bit string from float."""
-        return cls(cfg, "")
+        return cls(cfg, float_to_posit(val, n=cfg.n_bits, es=cfg.es))
     
     @property
     def float_approximation(self) -> float:
         """Return the closest float approximation."""
-        return 0.0  # FIXME
+        return posit_to_float(self.value, n=self.cfg.n_bits, es=self.cfg.es)
 
     def __setattr__(self, name, value):
         if self.__dict__.get("_locked", False):
@@ -105,11 +106,11 @@ class PyPosit:
         return self
 
     @property
-    def complement(self):
+    def complement(self) -> str:
         """Get 2's complement of value as a string."""
         return twoc(self.value, self.cfg.n_bits)
 
     @property
-    def sign(self):
+    def sign(self) -> int:
         """Return sign of value."""
         return 1 if self.value[0] == '0' else -1
