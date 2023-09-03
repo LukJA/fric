@@ -33,7 +33,7 @@ jobs:
       working-directory: ./hdl/verif/cocotb
       run: |
         source setup.sh
-        pytest --junitxml=pytest_report.xml --report-log=logs/pytest.log
+        pytest --junitxml=pytest_report.xml --report-log=logs/pytest.log -n auto
 
     - name: Generate report
       if: always()
