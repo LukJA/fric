@@ -71,6 +71,16 @@ class PyPosit:
             cfg=self.cfg,
             bit_str=bin_add_s(self.value, other.value)
         )
+    
+    def __iadd__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        if self.cfg != other.cfg:
+            raise ValueError("Configuration mismatch!")
+        
+        self.value = bin_add_s(self.value, other.value)
+        return self
 
     def __sub__(self, other):
         if not isinstance(other, self.__class__):
@@ -83,6 +93,16 @@ class PyPosit:
             cfg=self.cfg,
             bit_str=bin_sub_s(self.value, other.value)
         )
+    
+    def __isub__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+
+        if self.cfg != other.cfg:
+            raise ValueError("Configuration mismatch!")
+        
+        self.value = bin_sub_s(self.value, other.value)
+        return self
 
     @property
     def complement(self):
