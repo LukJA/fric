@@ -32,6 +32,11 @@ class PyPosit:
     def from_float(cls, cfg: PyPositConfig, val: float):
         """Factory method to create bit string from float."""
         return cls(cfg, "")
+    
+    @property
+    def float_approximation(self) -> float:
+        """Return the closest float approximation."""
+        return 0.0  # FIXME
 
     def __setattr__(self, name, value):
         if self.__dict__.get("_locked", False):
