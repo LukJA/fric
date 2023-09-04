@@ -1,3 +1,5 @@
+from ..decode import split_posit
+
 def bin_add_u(a: str, b: str, n: int):
     """Add two unsigned binary values and extend to n"""
     q = format(int(a, 2) + int(b, 2), 'b')
@@ -38,3 +40,8 @@ def bin_sub_s(a: str, b: str):
     b =  twoc(b, len(a))
     return bin_add_s(a, b)
 
+def posit_add(a: str, b: str, es: int) -> str:
+    sign_a, reg_a, exp_a, frac_a = split_posit(a, es=es)
+    sign_b, reg_b, exp_b, frac_b = split_posit(b, es=es)
+
+    
