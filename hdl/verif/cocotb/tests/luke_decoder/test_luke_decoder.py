@@ -57,6 +57,30 @@ def test_clz():
         ]
     )
 
+def test_cto():
+    cocotb_test_module(
+        src=SRC,
+
+        toplevel="count_tail_one",
+
+        modulepath=f"{CWD}/cto",
+        modules=[
+            "cocotb_test_cto"
+        ]
+    )
+
+def test_ctz():
+    cocotb_test_module(
+        src=SRC,
+
+        toplevel="count_tail_zero",
+
+        modulepath=f"{CWD}/ctz",
+        modules=[
+            "cocotb_test_ctz"
+        ]
+    )
+
 def test_decoder():
     cocotb_test_module(
         src=SRC,
