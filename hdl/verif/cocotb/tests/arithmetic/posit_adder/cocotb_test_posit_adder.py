@@ -126,3 +126,102 @@ async def test_posit_adder_top(dut):
     # end
 
 
+@cocotb.test()
+async def test_posit_adder_exact_71_a(dut):
+
+    dut._log.warning(f"Test {__name__} Starting...")
+    dut.a.value = 0
+    dut.b.value = 0
+    dut.rst.value = 0
+
+    # 10ns system clock, start it low
+    clock = Clock(dut.clk, 10, units="ns")
+    cocotb.start_soon(clock.start(start_high=False))
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    dut.rst.value = 1
+
+    one = BinaryValue("0100000") ## 1
+    dut.a.value = one
+    two = BinaryValue("0100000") ## 1
+    dut.b.value = two
+
+    # get results into dc reg
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    # get results into cn reg
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    # get results into nd reg
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+
+    dut._log.info(f"RESULT:     {dut.q.value}")
+    assert dut.q.value == BinaryValue("0101000") ## 2
+
+@cocotb.test()
+async def test_posit_adder_exact_71_b(dut):
+
+    dut._log.warning(f"Test {__name__} Starting...")
+    dut.a.value = 0
+    dut.b.value = 0
+    dut.rst.value = 0
+
+    # 10ns system clock, start it low
+    clock = Clock(dut.clk, 10, units="ns")
+    cocotb.start_soon(clock.start(start_high=False))
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    dut.rst.value = 1
+
+    one = BinaryValue("0100000") ## 1
+    dut.a.value = one
+    two = BinaryValue("0011000") ## 0.5
+    dut.b.value = two
+
+    # get results into dc reg
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    # get results into cn reg
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    # get results into nd reg
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+
+    dut._log.info(f"RESULT:     {dut.q.value}")
+    assert dut.q.value == BinaryValue("0100100") ## 1.5
+
+
+@cocotb.test()
+async def test_posit_adder_exact_71_c(dut):
+
+    dut._log.warning(f"Test {__name__} Starting...")
+    dut.a.value = 0
+    dut.b.value = 0
+    dut.rst.value = 0
+
+    # 10ns system clock, start it low
+    clock = Clock(dut.clk, 10, units="ns")
+    cocotb.start_soon(clock.start(start_high=False))
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    dut.rst.value = 1
+
+    one = BinaryValue("0110100") ## 8
+    dut.a.value = one
+    two = BinaryValue("0110010") ## 6
+    dut.b.value = two
+
+    # get results into dc reg
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    # get results into cn reg
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    # get results into nd reg
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+
+    dut._log.info(f"RESULT:     {dut.q.value}")
+    assert dut.q.value == BinaryValue("0110111") ## 14
