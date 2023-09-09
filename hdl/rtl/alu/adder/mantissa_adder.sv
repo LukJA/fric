@@ -9,7 +9,8 @@ module mantissa_adder #(
     input logic signed [7:0] b_regime, b_exponent, 
     input logic unsigned [7:0] b_mantissa,
     output logic unsigned [7:0] mantissa_sum,
-    output logic signed [7:0] interim_regime, interim_exponent
+    output logic signed [7:0] interim_regime, interim_exponent,
+    output logic negate_result
     );
 
 logic big_sign, small_sign;
@@ -27,31 +28,59 @@ comparator u_comp (.a_sign(a_sign), .b_sign(b_sign),
 
 // collect the interim values
 assign interim_regime = big_regime;
-assign interim_exponent = big_exponent - 1;
 
 // calulate the necessary addition offsets
 logic signed [7:0] shamt;
-logic signed [7:0] small_mantissa_sh;
 logic signed [7:0] delta_regime, delta_exponent;
 
 assign delta_regime = big_regime - small_regime;
 assign delta_exponent = big_exponent - small_exponent;
 assign shamt = (delta_regime<<EN) + delta_exponent;
-// barrell shift the smaller fraction to the right
+
+// unify sign description
+// B+ S- => smaller frac is negative - TC for a subtraction
+// B- S+ => Bigger frac is negative - TC smaller and negate result
+// B- S- => Negate Answer
+// B+ S+ => Default
+
+// NOTE using implicit twos complement signed repr
+logic unsigned [7:0] small_mantissa_sh;
+logic unsigned [7:0] small_mantissa_sh_alt;
+// barrel shift the smaller fraction to the right
 assign small_mantissa_sh = small_mantissa >> shamt;
 
-logic signed [7:0] small_mantissa_sh_alt;
 always_comb
+begin
 case ({big_sign,small_sign})
     {POS, NEG}: small_mantissa_sh_alt = (~small_mantissa_sh) + 1'b1;
     {NEG, POS}: small_mantissa_sh_alt = (~small_mantissa_sh) + 1'b1;
-    default: small_mantissa_sh_alt = small_mantissa_sh;
+    default:    small_mantissa_sh_alt = small_mantissa_sh;
 endcase
 
+case ({big_sign,small_sign})
+    {NEG, POS}: negate_result = 1'b1;
+    {NEG, NEG}: negate_result = 1'b1;
+    default:    negate_result = 1'b0;
+endcase
+end
+
 // sum the final fraction sections
-logic signed [7:0] s_mantissa_sum;
+logic unsigned [7:0] s_mantissa_sum;
+logic ovf;
 assign s_mantissa_sum = big_mantissa + small_mantissa_sh_alt;
-assign mantissa_sum = s_mantissa_sum;
+
+assign ovf = (s_mantissa_sum < big_mantissa || s_mantissa_sum < small_mantissa_sh_alt);
+
+always_comb 
+begin
+    if (ovf & ~negate_result) begin
+        interim_exponent = big_exponent;
+        mantissa_sum = {1'b1, 7'b0} | (s_mantissa_sum>>1);
+    end else begin
+        interim_exponent = big_exponent - 1;
+        mantissa_sum = s_mantissa_sum;
+    end
+end
 
 // this is enough for the second stage, return data
 endmodule : mantissa_adder

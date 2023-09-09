@@ -19,6 +19,7 @@ SRC = (
         f"{RTL_TOP}/alu/two_comp.sv"
     ]
     + glob.glob(f"{RTL_TOP}/decode/luke_decoder/*.sv")
+    + glob.glob(f"{RTL_TOP}/encode/*.sv")
     + glob.glob(f"{RTL_TOP}/alu/adder/*.sv")
 )
 

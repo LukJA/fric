@@ -65,6 +65,7 @@ end
 
 logic signed [7:0] interim_regime, interim_exponent; 
 logic unsigned [7:0] mantissa_sum; 
+logic n_r;
 
 mantissa_adder #(WIDTH,EN) mant_add (.a_sign(dc_a_sign), .b_sign(dc_b_sign),
 									.a_regime(dc_a_regime), 
@@ -75,31 +76,36 @@ mantissa_adder #(WIDTH,EN) mant_add (.a_sign(dc_a_sign), .b_sign(dc_b_sign),
 									.b_mantissa(dc_b_mantissa),
 									.mantissa_sum(mantissa_sum),
 									.interim_regime(interim_regime),
-									.interim_exponent(interim_exponent)
+									.interim_exponent(interim_exponent),
+									.negate_result(n_r)
 									);
 
 
 // second pipeline register
 
 logic signed [7:0] cn_interim_regime, cn_interim_exponent; 
-logic signed [7:0] cn_mantissa_sum; 
+logic unsigned [7:0] cn_mantissa_sum; 
+logic cn_n_r;
 
 always_ff @(posedge clk) begin
 	if (~rst) begin
 		cn_interim_regime <= 'b0;
 		cn_interim_exponent <= 'b0;
 		cn_mantissa_sum <= 'b0;
+		cn_mantissa_sum <= 'b0;
+		cn_n_r <= 'b0;
 	end else begin	
 		cn_interim_regime <= interim_regime;
 		cn_interim_exponent <= interim_exponent;
 		cn_mantissa_sum <= mantissa_sum;
+		cn_n_r <= n_r;
 	end
 end
 
 // stage 3 - normalisation
 
 logic signed [7:0] mantissa_norm;
-logic signed [7:0] regime_norm, exponent_norm;
+logic unsigned [7:0] regime_norm, exponent_norm;
 
 normalise #(WIDTH,EN) p_norm (.mantissa_sum(cn_mantissa_sum),
 								.interim_regime(cn_interim_regime),
@@ -109,7 +115,32 @@ normalise #(WIDTH,EN) p_norm (.mantissa_sum(cn_mantissa_sum),
 								.exponent(exponent_norm)
 								);
 
-assign q = a + b;
+// third pipeline register
+
+logic signed [7:0] nd_regime, nd_exponent; 
+logic signed [7:0] nd_mantissa; 
+logic nd_n_r;
+
+always_ff @(posedge clk) begin
+	if (~rst) begin
+		nd_regime <= 'b0;
+		nd_exponent <= 'b0;
+		nd_mantissa <= 'b0;
+		nd_n_r <= 'b0;
+	end else begin	
+		nd_regime <= regime_norm;
+		nd_exponent <= exponent_norm;
+		nd_mantissa <= mantissa_norm;
+		nd_n_r <= cn_n_r;
+	end
+end
+
+format_encoder #(WIDTH,EN) p_encode (.regime(nd_regime),
+								.exponent(nd_exponent),
+								.mantissa(nd_mantissa),
+								.n_r(nd_n_r),
+								.q(q));
+
 
 endmodule : posit_adder
 
