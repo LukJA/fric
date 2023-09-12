@@ -144,6 +144,24 @@ def test_addition_rounding_positive_71():
     assert a.to_float() == 32
     assert b.to_float() == 12
 
+    a.from_float(48.0, 7, 1)
+    b.from_float(64.0, 7, 1)
+    assert (a+b).to_float() == 128
+    assert a.to_float() == 48
+    assert b.to_float() == 64
+
+    a.from_float(256.0, 7, 1)
+    b.from_float(256.0, 7, 1)
+    assert (a+b).to_float() == 1024
+    assert a.to_float() == 256
+    assert b.to_float() == 256
+
+    a.from_float(32, 7, 1)
+    b.from_float(8, 7, 1)
+    assert (a+b).to_float() == 48
+    assert a.to_float() == 32
+    assert b.to_float() == 8
+
 def test_addition_exact_posneg_71():
     a = posit(1, "0000000")
     b = posit(1, "0000000")
