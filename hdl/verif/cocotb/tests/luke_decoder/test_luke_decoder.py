@@ -45,6 +45,18 @@ def test_clo():
         ]
     )
 
+def test_clo_24():
+    cocotb_test_module(
+        src=SRC,
+
+        toplevel="count_lead_one_24",
+
+        modulepath=f"{CWD}/count_lead_one_24",
+        modules=[
+            "cocotb_test_count_lead_one_24"
+        ]
+    )
+
 def test_clz():
     cocotb_test_module(
         src=SRC,

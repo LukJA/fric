@@ -42,19 +42,22 @@ endmodule
 module count_lead_one #(
     parameter W_IN = 8,
     parameter W_OUT = 8,
-    parameter __LEVEL = 1
+    parameter int CLO_IN = int'($pow(2, $clog2(W_IN)))
 ) (
     input logic  [W_IN-1:0] a,
     output logic [W_OUT-1:0] q
 );
 
+// expand input
+logic [CLO_IN-1:0] expanded_a;
+assign expanded_a = {a, {CLO_IN-W_IN{1'b0}}};
 
+// create the ideal tree structure
 logic [$clog2(W_IN)-1:0] leading_ones;
-clo_internal #(.W_IN(W_IN), .W_OUT($clog2(W_IN))) clo (.a(a), .q(leading_ones));
+clo_internal #(.W_IN(CLO_IN), .W_OUT($clog2(W_IN))) clo (.a(expanded_a), .q(leading_ones));
 
 logic all_one;
-assign all_one = &a;
-assign q = (all_one) ? W_IN : {{W_OUT-$clog2(W_IN){1'b0}}, leading_ones};
-
+assign all_one = &expanded_a;
+assign q = (all_one) ? W_IN : {{(W_OUT-$bits(leading_ones)){1'b0}}, leading_ones};
 
 endmodule
