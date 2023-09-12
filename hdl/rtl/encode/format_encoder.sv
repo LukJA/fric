@@ -4,12 +4,12 @@ import common::*;
 
 // Comb
 module format_encoder #(
-	parameter WIDTH=7,
+    parameter WIDTH=7,
     parameter EN=1)(
-	input logic signed [7:0] regime, exponent,
+    input logic signed [7:0] regime, exponent,
     input logic unsigned [7:0] mantissa,
     input logic n_r,
-	output logic [WIDTH-1:0] q
+    output logic [WIDTH-1:0] q
     );
 
 // step 1: combination and alignment
@@ -31,11 +31,13 @@ generate
     end
 endgenerate
 
-// extract the rounding pair 
+// extract the rounding pair
 logic [WIDTH-2:0] interim_posit;
 logic [1:0] rounding_pair;
-assign interim_posit = expanded_mantissa[WIDTH:2];
+// assign interim_posit = expanded_mantissa[WIDTH:2];
 assign rounding_pair = expanded_mantissa[1:0];
+// now we need to do rounding
+assign interim_posit = rounding_pair[1] ? expanded_mantissa[WIDTH:2] + 1'b1 : expanded_mantissa[WIDTH:2];
 
 // align the exponent
 // TODO - MAY BE NEGATIVE
@@ -55,7 +57,7 @@ assign regime_rno = 1'b1<<(WIDTH-2-abs_regime);
 
 // get the regime bits
 logic [WIDTH-2:0] regime_rno_invert;
-/* verilator lint_off UNOPTFLAT */ 
+/* verilator lint_off UNOPTFLAT */
 logic [WIDTH-2:0] regime_mask;
 assign regime_rno_invert = ~regime_rno;
 
@@ -81,17 +83,14 @@ begin
 end
 
 logic [WIDTH-1:0] posit_aligned;
-
-// step 2: rounding 
 logic [WIDTH-1:0] posit_rounded;
-assign posit_rounded = posit_aligned;
 
 // step 3: sign check
 // if (n_r) return a TC of the rounded posit
 logic [WIDTH-1:0] posit_signed;
 logic [WIDTH-1:0] posit_complement;
-two_comp #(WIDTH) output_sign (.a(posit_rounded), .q(posit_complement));
-assign posit_signed = n_r ? posit_complement : posit_rounded;
+two_comp #(WIDTH) output_sign (.a(posit_aligned), .q(posit_complement));
+assign posit_signed = n_r ? posit_complement : posit_aligned;
 
 // export
 assign q = posit_signed;

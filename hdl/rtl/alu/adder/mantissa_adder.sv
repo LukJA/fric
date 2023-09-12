@@ -1,8 +1,8 @@
 import common::*;
 
 module mantissa_adder #(
-	parameter WIDTH=7,
-    parameter EN=1)(
+    parameter int WIDTH=7,
+    parameter int EN=1)(
     input sign_t a_sign, b_sign,
     input logic signed [7:0] a_regime, a_exponent,
     input logic unsigned [7:0] a_mantissa,
@@ -20,11 +20,11 @@ logic signed [7:0] small_regime, small_exponent;
 logic unsigned [7:0] small_mantissa;
 
 comparator u_comp (.a_sign(a_sign), .b_sign(b_sign),
-					.a_regime(a_regime), .a_exponent(a_exponent), .a_mantissa(a_mantissa),
-					.b_regime(b_regime), .b_exponent(b_exponent), .b_mantissa(b_mantissa), 
-					.big_sign(big_sign), .small_sign(small_sign),
-					.big_regime(big_regime), .big_exponent(big_exponent), .big_mantissa(big_mantissa),
-					.small_regime(small_regime), .small_exponent(small_exponent), .small_mantissa(small_mantissa));
+                    .a_regime(a_regime), .a_exponent(a_exponent), .a_mantissa(a_mantissa),
+                    .b_regime(b_regime), .b_exponent(b_exponent), .b_mantissa(b_mantissa),
+                    .big_sign(big_sign), .small_sign(small_sign),
+                    .big_regime(big_regime), .big_exponent(big_exponent), .big_mantissa(big_mantissa),
+                    .small_regime(small_regime), .small_exponent(small_exponent), .small_mantissa(small_mantissa));
 
 // collect the interim values
 assign interim_regime = big_regime;
@@ -49,14 +49,17 @@ logic unsigned [7:0] small_mantissa_sh_alt;
 // barrel shift the smaller fraction to the right
 assign small_mantissa_sh = small_mantissa >> shamt;
 
+logic neg_in_sum;
 always_comb
 begin
+// in which situations do we negate the smaller value for the binary add
 case ({big_sign,small_sign})
-    {POS, NEG}: small_mantissa_sh_alt = (~small_mantissa_sh) + 1'b1;
-    {NEG, POS}: small_mantissa_sh_alt = (~small_mantissa_sh) + 1'b1;
-    default:    small_mantissa_sh_alt = small_mantissa_sh;
+    {POS, NEG}: neg_in_sum = 1'b1;
+    {NEG, POS}: neg_in_sum = 1'b1;
+    default:    neg_in_sum = 1'b0;
 endcase
 
+// in which situations should we negate our final answer
 case ({big_sign,small_sign})
     {NEG, POS}: negate_result = 1'b1;
     {NEG, NEG}: negate_result = 1'b1;
@@ -64,21 +67,22 @@ case ({big_sign,small_sign})
 endcase
 end
 
+assign small_mantissa_sh_alt = neg_in_sum ? (~small_mantissa_sh) + 1'b1 : small_mantissa_sh;
+
 // sum the final fraction sections
-logic unsigned [7:0] s_mantissa_sum;
+logic unsigned [8:0] s_mantissa_sum;
 logic ovf;
 assign s_mantissa_sum = big_mantissa + small_mantissa_sh_alt;
+assign ovf = s_mantissa_sum[8];
 
-assign ovf = (s_mantissa_sum < big_mantissa || s_mantissa_sum < small_mantissa_sh_alt);
-
-always_comb 
+always_comb
 begin
-    if (ovf & ~negate_result) begin
+    if (ovf & ~neg_in_sum) begin
         interim_exponent = big_exponent;
-        mantissa_sum = {1'b1, 7'b0} | (s_mantissa_sum>>1);
+        mantissa_sum = {1'b1, 7'b0} | (s_mantissa_sum[7:0]>>1);
     end else begin
         interim_exponent = big_exponent - 1;
-        mantissa_sum = s_mantissa_sum;
+        mantissa_sum = s_mantissa_sum[7:0];
     end
 end
 

@@ -32,25 +32,35 @@ logic unsigned [7:0] shamt_exp, shamt_bar;
 
 two_comp #(8) negate_exponent (.a(a_exponent), .q(b_exp_tc));
 count_lead_zero #(8,8) clz_exp (.a(a_exponent), .q(shamt_exp));
-count_lead_zero #(8,8) clz_bar (.a(a_exponent), .q(shamt_bar));
+count_lead_zero #(8,8) clz_bar (.a(b_exp_tc), .q(shamt_bar));
 
 logic unsigned [7:0] exp_adj_a, exp_adj_b;
 assign exp_adj_a = (8-shamt_exp-1);
 assign exp_adj_b = (8-shamt_bar);
 
+logic dbg_exp_big, dbg_exp_small;
+
 always_comb
 begin
     // for a too big exponent
     if (a_exponent >= 2**EN) begin
+        dbg_exp_big = 1'b1;
+        dbg_exp_small = 1'b0;
+
         b_exponent = a_exponent - (exp_adj_a<<EN);
         b_regime = interim_regime + exp_adj_a;
     // for a negative exponent
-    end else if (a_exponent <= 0) begin 
+    end else if (a_exponent < 0) begin 
+        dbg_exp_big = 1'b0;
+        dbg_exp_small = 1'b1;
+
         b_exponent = a_exponent + (exp_adj_b<<EN);
         b_regime = interim_regime - exp_adj_b;
     end else begin
         b_exponent = a_exponent;
         b_regime = interim_regime;
+        dbg_exp_big = 1'b0;
+        dbg_exp_small = 1'b0;
     end
 end
 
