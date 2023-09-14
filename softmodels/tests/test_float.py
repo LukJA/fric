@@ -4,10 +4,11 @@ from pyposit import PyPosit
 from util import cfg_71, pyposit_71_from_float
 
 float_pos_test_vals = {
-     3/16 : "0001110",
-    3/128 : "0000101",
-     16.0 : "0111000",
-      0.0 : "0000000"
+      3/16 : "0001110",
+     3/128 : "0000101",
+      16.0 : "0111000",
+       0.0 : "0000000",
+    1024.0 : "0111111"
 }
 
 float_neg_test_vals = {

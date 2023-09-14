@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pyposit.operations.logic import twoc
 from pyposit.operations.generation import gen_bin_s, i_bin_s
 from pyposit.operations.comparison import bin_g_s, bin_eq_s, bin_g_u, bin_geq_s
-from pyposit.operations.arithmetic import bin_add_s, bin_sub_s
+from pyposit.operations.arithmetic import bin_add_s, bin_sub_s, bin_add_u
 from pyposit.conversion import float_to_posit
 
 @dataclass
@@ -257,7 +257,7 @@ class PyPosit:
             f_sum = f_sum[x + 1:]
         else:
             x = 0
-            r_out = "10000000" ## force regime exceedence - set to max negative
+            r_out = gen_bin_s(-n-1, n)## force regime exceedence - set to max negative
             #raise Exception("Zero Case")
 
         ## update the exponent with the normalised shift
@@ -281,85 +281,56 @@ class PyPosit:
             r_out = bin_sub_s(r_out, gen_bin_s(shiftamt, 8))
 
         ## we now have all the ideal required parts, convert to closest posit repr by available space
-        ## TODO: rounding probably invalid for frac len ~ 0 region
         ## calculate lengths required by each field
-        sign_ = 1
-        regime_ = - i_bin_s(r_out) if i_bin_s(r_out) < 0 else i_bin_s(r_out) + 1
-        rnought_ = 1
-        exponent_ = es
-        if sign_ + regime_ > n:
-            pass # infinity
-        elif sign_ + regime_ == n:
-            f_sum = ""
-            e_out = gen_bin_s(0, 8)
-        elif sign_ + regime_ + rnought_ == n:
-            #  s r rbar 
-            f_sum = ""
-            e_out = gen_bin_s(0, 8)
-        elif sign_ + regime_ + rnought_ + exponent_ == n:
-            #  s r rbar e
-            # no frac
-            f_sum = ""
-        else:
-            ## absolute allowed fraction length
-            f_depth = n - (sign_ + regime_ + rnought_ + exponent_)
-            
-            ## remove trailing zeroes 
-            f_sum = f_sum[:f_sum.rfind("1")+1]
-            ## extend if necessary to required depth
-            f_sum = f_sum + "0"*(f_depth- len(f_sum))
-            
-            if (len(f_sum) == f_depth):
-                ## then we are exact
-                pass
-            else:
-                ## non-exact representation will occur
-                ## if the mantissa has a bit that will fall off the edge, use it to round over the final bit?
+        w_sign_ = 1
+        w_regime_ = - i_bin_s(r_out) if i_bin_s(r_out) < 0 else i_bin_s(r_out) + 1
+        w_rnought_ = 1
+        w_exponent_ = es
 
-
-                ## we need to round
-                digit_n = f_sum[f_depth-1]
-                digit_n1 = f_sum[f_depth]
-
-                ## round down case
-                if digit_n1 == "0":
-                    #dprint.debug(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} = '0X' or '10'")
-                    f_sum = f_sum[:f_depth]
-                ## round up case
-                else:
-                    ## shift right to get MSB
-                    f_sum = "1" + f_sum
-
-                    ## add one at LSB-1 and take the floor
-                    roundup = bin(int(f_sum, 2) + int("1"+"0"*( len(f_sum)-f_depth-1), 2))[2:]
-
-                    ## check for overflow
-                    if len(roundup) > len(f_sum):
-                        raise BaseException("Rounding Overflow Not Implemented")
-                    
-                    ## shift left one and round up
-                    f_sum = roundup[1: f_depth+1]
-
-
-        ## compute the approximate fractional value
-        # dprint.debug(f"Poscat: R:{r_out} E:{e_out} F:(1).{f_sum}")
-        # f = 2**(-len(f_sum))*int("0" + f_sum, 2)
-        # sff = 2**(2**(es))
-        # dprint.debug(f"R: {r_out} E: {e_out} F: {f}")
-        # dprint.debug(f"Out: {1+f} * { 2**(i_bin_s(e_out))} * {sff**(i_bin_s(r_out))}")
-        # dprint.debug(f"Approx: {(1 + f) * 2**(i_bin_s(e_out)) * sff**(i_bin_s(r_out))}")
-
-
-        finalstr = "0"
-        # dprint.debug(f"0 + R{regime_}*X + R_{'Y' if (regime_ + 1 < n) else ''} + E{e_out[-es:]} + F{f_sum}")
-            
+        ## actual fields
+        ## reduce exponent to allowed width
+        eout = e_out[-es:]
+        # create regime
+        reg = ""
         if i_bin_s(r_out) < 0:
-            finalstr += (regime_)*"0" + "1" 
+            reg = (w_regime_)*"0" + "1" 
         else:
-            finalstr += (regime_)*"1" + "0" 
-        ## chop off the excess to fit the posit repr
-        finalstr += "0"*(exponent_- len(e_out[-es:])) + e_out[-es:] + f_sum
-        finalstr = finalstr[:n]
+            reg = (w_regime_)*"1" + "0" 
+        ## remove trailing zeroes
+        f_sum = f_sum[:f_sum.rfind("1")+1]
+        ## if there was no "1" add the zero back
+        if len(f_sum) == 0:
+            f_sum = "0"
+        ## create the final  string
+        q_posit = "0" + reg + eout + f_sum
+
+        ## ROUNDING
+        if len(q_posit) <= n:
+            ## Exact
+            finalstr = q_posit + (n-len(q_posit))*"0"
+        else:
+            ## round
+            ## if there are no overflown "1"s then its still exact
+            if ("1" not in q_posit[n:]):
+                finalstr = q_posit[:n]
+            else:
+                remainder = q_posit[n+1:]
+                let_u = q_posit[:n]
+                let_w = bin_add_u(q_posit[:n], "1", n)
+                let_v = q_posit[:n] + "1"
+
+                # zero extend
+                let_v_ext = let_v + "0"*(len(q_posit) -len(let_v))
+
+                # if x = v
+                if (q_posit == let_v_ext and let_u[n-1] == "0"):
+                    finalstr = let_w
+                # if x > v
+                elif (bin_g_u(q_posit, let_v_ext)):
+                    finalstr = let_w
+                else:
+                    finalstr = let_u
+
 
         ## if we really want the negative soln, invert it
         if big_sign == -1:
@@ -411,7 +382,9 @@ class PyPosit:
     
     @property
     def regime_len(self):
-        return self.value[1:].find( '0' if self.value[1] == '1' else '1' )
+        rbar = '0' if self.value[1] == '1' else '1'
+        return (self.value[1:].find(rbar) if rbar in self.value[1:]
+                else len(self) - 1)
     
     @property
     def rbar_len(self):
