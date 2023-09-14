@@ -1,9 +1,11 @@
+from pyposit.operations.logic import twoc
+
 def gen_bin_u(v: int, n: int):
     q = format(int(v), 'b')
     if len(q) < n: # sign extend
         q = "0"*(n-len(q)) + q
     if q[0] == "1":
-        raise Exception("Not Unsigned")
+        raise ValueError("Not Unsigned")
     return q
 
 def i_bin_u(v: str):

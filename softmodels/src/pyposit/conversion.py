@@ -1,5 +1,5 @@
 from math import isinf
-from ..operations.logic import twoc
+from pyposit.operations.logic import twoc
 
 def float_to_posit(x: float, *, n: int = 32, es: int = 2) -> str:
     """Generate posit string from float."""
@@ -74,7 +74,3 @@ def float_to_posit(x: float, *, n: int = 32, es: int = 2) -> str:
         posstr = twoc(posstr, len(posstr))
     
     return posstr
-        
-def posit_to_float(p: str, *, n: int = 32, es: int = 2) -> float:
-    """Generate float from posit string."""
-    return 0.0  # FIXME
