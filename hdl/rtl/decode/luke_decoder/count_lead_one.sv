@@ -58,6 +58,6 @@ clo_internal #(.W_IN(CLO_IN), .W_OUT($clog2(W_IN))) clo (.a(expanded_a), .q(lead
 
 logic all_one;
 assign all_one = &expanded_a;
-assign q = (all_one) ? W_IN : {{(W_OUT-$bits(leading_ones)){1'b0}}, leading_ones};
+assign q = (all_one) ? W_IN[W_OUT-1:0] : {{(W_OUT-$bits(leading_ones)){1'b0}}, leading_ones};
 
 endmodule

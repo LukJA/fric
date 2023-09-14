@@ -59,6 +59,6 @@ clz_internal #(.W_IN(CLO_IN), .W_OUT($clog2(W_IN))) clz (.a(expanded_a), .q(lead
 
 logic all_zero;
 assign all_zero = ~(|expanded_a);
-assign q = (all_zero) ? W_IN : {{(W_OUT-$bits(leading_zeroes)){1'b0}}, leading_zeroes};
+assign q = (all_zero) ? W_IN[W_OUT-1:0] : {{(W_OUT-$bits(leading_zeroes)){1'b0}}, leading_zeroes};
 
 endmodule

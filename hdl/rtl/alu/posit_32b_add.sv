@@ -8,10 +8,10 @@ module posit_32b_add (
     output logic [31:0] q
 );
 
-    // create a 32/3 size posit adder
+    // create a 32/2 size posit adder
     posit_adder #(
         .WIDTH(32),
-        .EN(3)
+        .EN(2)
     ) m_p32b_adder (
         .clk(clk),
         .rst(rst),

@@ -51,3 +51,15 @@ def test_posit_7b_add():
             "cocotb_test_posit_7b_add"
         ]
     )
+
+def test_posit_32b_add():
+    cocotb_test_module(
+        src=SRC,
+
+        toplevel="posit_32b_add",
+
+        modulepath=f"{CWD}/posit_32b_add",
+        modules=[
+            "cocotb_test_posit_32b_add"
+        ]
+    )

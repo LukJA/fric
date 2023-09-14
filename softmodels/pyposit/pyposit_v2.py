@@ -585,6 +585,10 @@ class posit_model():
                 dprint.debug("Repr Exact")
                 pass
             else:
+                ## non-exact representation will occur
+                ## if the mantissa has a bit that will fall off the edge, use it to round over the final bit?
+
+
                 ## we need to round
                 digit_n = f_sum[f_depth-1]
                 digit_n1 = f_sum[f_depth]
@@ -661,12 +665,8 @@ class posit_model():
 
 if __name__ == "__main__":
 
-    a = posit_model(1, "0000000")
-    b = posit_model(1, "0000000")
-
-    a.from_float(1.5, 7, 1)
-    b.from_float(-1.0, 7, 1)
-    assert (a+b).to_float() == 0.5
-    assert a.to_float() == 1.5
-    assert b.to_float() == -1.0
+    a = posit_model(2, (12, 32))
+    b = posit_model(2, (12, 32))
+    c = a + b
+    dprint.debug(c.to_float())
 
