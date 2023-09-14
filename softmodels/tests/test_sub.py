@@ -27,7 +27,7 @@ def _test_subtraction(test_cases):
 
 def test_subtraction_exact_positive_71():
     _test_subtraction([
-        #      a,      b,    a+b, any != cases
+        #      a,      b,    a-b, any != cases
         (    1.0,    1.0,    0.0,           [] ),
         (    1.5,    1.0,    0.5,           [] ),
         (    8.0,    6.0,    2.0,           [] ),
@@ -38,7 +38,7 @@ def test_subtraction_exact_positive_71():
 
 def test_subtraction_rounding_positive_71():
     _test_subtraction([
-        #      a,      b,    a+b, any != cases
+        #      a,      b,    a-b, any != cases
         (   10.0,    1.5,    8.0,           [] ),
         (   24.0,    5.0,   16.0,           [] ),
         (   32.0,   10.0,   24.0,           [] )

@@ -40,7 +40,7 @@ class PyPosit:
     def float_approximation(self) -> float:
         """Return the closest float approximation."""
     
-        s = self.sign
+        s = int(self.value[0])
 
         if '1' not in self.value[1:]:
             return 0 if self.is_pos else float('inf')
@@ -411,9 +411,7 @@ class PyPosit:
     
     @property
     def regime_len(self):
-        return self.value[1:].find(
-            '1' if self.is_pos else '1'
-        )
+        return self.value[1:].find( '0' if self.value[1] == '1' else '1' )
     
     @property
     def rbar_len(self):
