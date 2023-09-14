@@ -65,6 +65,9 @@ def test_to_float_exact_positive_71():
     x.p_set(1, "0000000")
     assert x.to_float() == 0
     assert x.to_float_2c() == 0
+    x.p_set(1, "0111111")
+    assert x.to_float() == 1024
+    assert x.to_float_2c() == 1024
 
 def test_to_float_exact_negative_71():
     x = posit(1, "0000000")

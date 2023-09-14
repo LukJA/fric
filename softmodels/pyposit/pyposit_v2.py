@@ -162,9 +162,13 @@ class posit_model():
     
     def regime_len(self) -> int:
         if self.p_str[1] == "1":
-            return self.p_str[1:].find("0")
+            if "0" in self.p_str[1:]:
+                return self.p_str[1:].find("0")
+            return len(self.p_str)-1
         if self.p_str[1] == "0":
-            return self.p_str[1:].find("1")
+            if "1" in self.p_str[1:]:
+                return self.p_str[1:].find("1")
+            return len(self.p_str)-1
     
     def regime_str(self) -> str:
         return self.p_str[1: 1 + self.regime_len()]
@@ -176,7 +180,7 @@ class posit_model():
             return 1
     
     def rbar_str(self) -> str:
-        if self.rbar_len:
+        if self.rbar_len():
             return self.p_str[1 + self.regime_len()]
         else:
             return ""
@@ -518,7 +522,7 @@ class posit_model():
         else:
             dprint.debug("Fraction is all 0s - answer is 0.0")
             x = 0
-            r_out = "10000000" ## force regime exceedence - set to max negative
+            r_out = gen_bin_s(-n-1, n)## force regime exceedence - set to max negative
             #raise Exception("Zero Case")
 
         ## update the exponent with the normalised shift
@@ -550,94 +554,72 @@ class posit_model():
         dprint.debug(f"Posnormal: R:{r_out} E:{e_out} F:(1).{f_sum}")
 
         ## we now have all the ideal required parts, convert to closest posit repr by available space
-        ## TODO: rounding probably invalid for frac len ~ 0 region
         ## calculate lengths required by each field
-        sign_ = 1
-        regime_ = - i_bin_s(r_out) if i_bin_s(r_out) < 0 else i_bin_s(r_out) + 1
-        rnought_ = 1
-        exponent_ = es
-        if sign_ + regime_ > n:
-            dprint.debug("Infinity")
-        elif sign_ + regime_ == n:
-            f_sum = ""
-            e_out = gen_bin_s(0, 8)
-        elif sign_ + regime_ + rnought_ == n:
-            #  s r rbar 
-            f_sum = ""
-            e_out = gen_bin_s(0, 8)
-        elif sign_ + regime_ + rnought_ + exponent_ == n:
-            #  s r rbar e
-            # no frac
-            f_sum = ""
-        else:
-            ## absolute allowed fraction length
-            f_depth = n - (sign_ + regime_ + rnought_ + exponent_)
-            
-            ## remove trailing zeroes 
-            f_sum = f_sum[:f_sum.rfind("1")+1]
-            ## extend if necessary to required depth
-            f_sum = f_sum + "0"*(f_depth- len(f_sum))
+        w_sign_ = 1
+        w_regime_ = - i_bin_s(r_out) if i_bin_s(r_out) < 0 else i_bin_s(r_out) + 1
+        w_rnought_ = 1
+        w_exponent_ = es
 
-            dprint.debug(f"Length : {len(f_sum)} Allowed : {f_depth} -> (1).{f_sum[:f_depth]}({f_sum[f_depth:]})")
-            
-            if (len(f_sum) == f_depth):
-                ## then we are exact
-                dprint.debug("Repr Exact")
-                pass
-            else:
-                ## non-exact representation will occur
-                ## if the mantissa has a bit that will fall off the edge, use it to round over the final bit?
-
-
-                ## we need to round
-                digit_n = f_sum[f_depth-1]
-                digit_n1 = f_sum[f_depth]
-                dprint.debug(f"{digit_n}-{digit_n1}-({f_sum[f_depth+1:]})")
-
-                ## round down case
-                if digit_n1 == "0":
-                    dprint.debug(f"Round Down {f_sum} {f_depth}")
-                    #dprint.debug(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} = '0X' or '10'")
-                    f_sum = f_sum[:f_depth]
-                ## round up case
-                else:
-                    dprint.debug("Round Up")
-                    #dprint.debug(f"Reasons: {f_sum[f_depth-1]},{f_sum[f_depth]} != '0X' or '10'")
-                    ## shift right to get MSB
-                    dprint.debug(f"f og: {f_sum}")
-                    f_sum = "1" + f_sum
-                    dprint.debug(f"f ex: {f_sum}")
-                    ## add one at LSB-1 and take the floor
-                    roundup = bin(int(f_sum, 2) + int("1"+"0"*( len(f_sum)-f_depth-1), 2))[2:]
-                    dprint.debug(f"rup: {roundup}")
-                    ## check for overflow
-                    if len(roundup) > len(f_sum):
-                        raise BaseException("Rounding Overflow Not Implemented")
-                    
-                    ## shift left one and round up
-                    f_sum = roundup[1: f_depth+1]
-                    dprint.debug(f"f rd: {f_sum}")
-
-
-        ## compute the approximate fractional value
-        # dprint.debug(f"Poscat: R:{r_out} E:{e_out} F:(1).{f_sum}")
-        # f = 2**(-len(f_sum))*int("0" + f_sum, 2)
-        # sff = 2**(2**(es))
-        # dprint.debug(f"R: {r_out} E: {e_out} F: {f}")
-        # dprint.debug(f"Out: {1+f} * { 2**(i_bin_s(e_out))} * {sff**(i_bin_s(r_out))}")
-        # dprint.debug(f"Approx: {(1 + f) * 2**(i_bin_s(e_out)) * sff**(i_bin_s(r_out))}")
-
-
-        finalstr = "0"
-        # dprint.debug(f"0 + R{regime_}*X + R_{'Y' if (regime_ + 1 < n) else ''} + E{e_out[-es:]} + F{f_sum}")
-            
+        ## actual fields
+        ## reduce exponent to allowed width
+        eout = e_out[-es:]
+        # create regime
+        reg = ""
         if i_bin_s(r_out) < 0:
-            finalstr += (regime_)*"0" + "1" 
+            reg = (w_regime_)*"0" + "1" 
         else:
-            finalstr += (regime_)*"1" + "0" 
-        ## chop off the excess to fit the posit repr
-        finalstr += "0"*(exponent_- len(e_out[-es:])) + e_out[-es:] + f_sum
-        finalstr = finalstr[:n]
+            reg = (w_regime_)*"1" + "0" 
+        ## remove trailing zeroes
+        f_sum = f_sum[:f_sum.rfind("1")+1]
+        ## if there was no "1" add the zero back
+        if len(f_sum) == 0:
+            f_sum = "0"
+        ## create the final  string
+        dprint.debug(f"Str Reg: {reg}")
+        dprint.debug(f"Str Exp: {eout}")
+        dprint.debug(f"Str Man: {f_sum}")
+        q_posit = "0" + reg + eout + f_sum
+
+        ## ROUNDING
+        if len(q_posit) <= n:
+            ## Exact
+            finalstr = q_posit + (n-len(q_posit))*"0"
+            dprint.debug(f"Exact: {finalstr}")
+        else:
+            ## round
+            ## if there are no overflown "1"s then its still exact
+            if ("1" not in q_posit[n:]):
+                finalstr = q_posit[:n]
+            else:
+                dprint.debug(f"round: {q_posit}")
+                dprint.debug(f"allow: {q_posit[:n]}:{q_posit[n:]}")
+                remainder = q_posit[n+1:]
+                let_u = q_posit[:n]
+                let_w = bin_add_u(q_posit[:n], "1", n)
+                let_v = q_posit[:n] + "1"
+                dprint.debug(f"u:   {let_u}")
+                dprint.debug(f"w:   {let_w}")
+                dprint.debug(f"v:   {let_v}")
+
+                # zero extend
+                let_v_ext = let_v + "0"*(len(q_posit) -len(let_v))
+                dprint.debug(f"vex: {let_v_ext}")
+                dprint.debug(f"q  : {q_posit}")
+
+                # if x = v
+                if (q_posit == let_v_ext and let_u[n-1] == "0"):
+                    dprint.debug(f"A")
+                    finalstr = let_w
+                # if x > v
+                elif (bin_g_u(q_posit, let_v_ext)):
+                    dprint.debug(f"B")
+                    finalstr = let_w
+                else:
+                    dprint.debug(f"C")
+                    finalstr = let_u
+
+        dprint.debug(f"selected: {finalstr}")
+
 
         ## if we really want the negative soln, invert it
         if big_sign == -1:
@@ -665,8 +647,8 @@ class posit_model():
 
 if __name__ == "__main__":
 
-    a = posit_model(2, (12, 32))
-    b = posit_model(2, (12, 32))
+    a = posit_model(1, (256, 7))
+    b = posit_model(1, (256, 7))
     c = a + b
-    dprint.debug(c.to_float())
+    dprint.debug(c.to_float_2c())
 
