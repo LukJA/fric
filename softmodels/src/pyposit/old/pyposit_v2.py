@@ -1,4 +1,8 @@
-from dbg import logger as dprint
+# setup_logger.py
+import logging
+FORMAT = '[%(filename)s:%(lineno)s - %(funcName)12s()][%(levelname)s]  %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+dprint = logging.getLogger('dbg')
 
 class posit_model():
     """ Hardward Posit Model """
@@ -10,7 +14,7 @@ class posit_model():
         if type(p_init) == str:
             self.p_str = p_init
         elif type(p_init) == tuple:
-            self.from_float(p_init[0], p_init[1], es)
+            self.from_float(p_init[0], p_init[1], en)
         else:
             raise BaseException("Incorrect Init Form")
 
@@ -349,7 +353,7 @@ class posit_model():
             frac_smol = twoc(frac_smol, len(frac_smol))
             dprint.debug(f"big:   0.{frac_big}")
             dprint.debug(f"small: 0.{frac_smol}")
-        # negpos
+        # negneg
         if big_sign == -1 and smol_sign == -1:
             dprint.debug("Both negative - negate answer")
 
@@ -450,6 +454,10 @@ class posit_model():
                 dprint.debug("Repr Exact")
                 pass
             else:
+                ## non-exact representation will occur
+                ## if the mantissa has a bit that will fall off the edge, use it to round over the final bit?
+
+
                 ## we need to round
                 digit_n = f_sum[f_depth-1]
                 digit_n1 = f_sum[f_depth]
@@ -506,6 +514,12 @@ class posit_model():
             dprint.debug("Taking negation of answer")
         dprint.debug(finalstr)
 
+        ## must return original object signs
+        if a_sign == -1:
+            self.p_str = twoc(self.p_str, len(self.p_str))
+        if b_sign == -1:
+            other.p_str = twoc(other.p_str, len(other.p_str))
+
         return posit_model(es, finalstr)
 
     def __sub__(self, other):
@@ -520,16 +534,8 @@ class posit_model():
 
 if __name__ == "__main__":
 
-    n = 7
-    es = 1
-
-    a = posit_model(es, (1.5, n))
-    b = posit_model(es, (-1, n))
-
-    dprint.debug(a.to_float())
-    dprint.debug(b.to_float())
-    print("Start")
-    c = a+b
-    
-    dprint.debug(f"Posit: {c.to_float()}")
+    a = posit_model(2, (12, 32))
+    b = posit_model(2, (12, 32))
+    c = a + b
+    dprint.debug(c.to_float())
 
