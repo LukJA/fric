@@ -243,30 +243,53 @@ async def test_posit_adder_top(dut):
 
     # end
 
-# @cocotb.test()
-# async def test_posit_7b_add_constrained_rand_int(dut):
+@cocotb.test()
+async def test_posit_32b_add_constrained_rand_int(dut):
 
-#     dut._log.warning(f"Test {__name__}.constrained_rand_int Starting...")
-#     dut.a.value = 0
-#     dut.b.value = 0
-#     dut.rst.value = 0
+    dut._log.warning(f"Test {__name__}.constrained_rand_int Starting...")
+    dut.a.value = 0
+    dut.b.value = 0
+    dut.rst.value = 0
 
-#     # 10ns system clock, start it low
-#     clock = Clock(dut.clk, 10, units="ns")
-#     cocotb.start_soon(clock.start(start_high=False))
-#     await RisingEdge(dut.clk)
-#     await FallingEdge(dut.clk)
-#     dut.rst.value = 1
+    # 10ns system clock, start it low
+    clock = Clock(dut.clk, 10, units="ns")
+    cocotb.start_soon(clock.start(start_high=False))
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    dut.rst.value = 1
 
-#     # Test:
-#     for i in range(10):
-#         a =  random.randint(0, 128)
-#         b =  random.randint(0, 128)
-#         await test_ab(dut, a, b)
+    # Test:
+    for i in range(10):
+        a =  random.randint(0, 1e9)
+        b =  random.randint(0, 1e9)
+        await test_ab(dut, a, b)
+
+@cocotb.test()
+async def test_posit_32b_add_constrained_rand(dut):
+
+    dut._log.warning(f"Test {__name__}.constrained_rand_int Starting...")
+    dut.a.value = 0
+    dut.b.value = 0
+    dut.rst.value = 0
+
+    # 10ns system clock, start it low
+    clock = Clock(dut.clk, 10, units="ns")
+    cocotb.start_soon(clock.start(start_high=False))
+    await RisingEdge(dut.clk)
+    await FallingEdge(dut.clk)
+    dut.rst.value = 1
+
+    # Test:
+    for i in range(10):
+        a =  random.randint(0, 1e9)
+        a = a/1e5
+        b =  random.randint(0, 1e9)
+        b = b/1e5
+        await test_ab(dut, a, b)
 
 
 @cocotb.test()
-async def test_posit_7b_add_exact_positive(dut):
+async def test_posit_32b_add_exact_positive(dut):
 
     dut._log.warning(f"Test {__name__}.add_exact_positive Starting...")
     dut.a.value = 0
@@ -288,7 +311,7 @@ async def test_posit_7b_add_exact_positive(dut):
     await test_ab(dut, 128.0, 128.0)
 
 @cocotb.test()
-async def test_posit_7b_add_rounded_positive(dut):
+async def test_posit_32b_add_rounded_positive(dut):
 
     dut._log.warning(f"Test {__name__}.rounded_positive Starting...")
     dut.a.value = 0
@@ -308,7 +331,7 @@ async def test_posit_7b_add_rounded_positive(dut):
 
 
 @cocotb.test()
-async def test_posit_7b_add_exact_posneg(dut):
+async def test_posit_32b_add_exact_posneg(dut):
 
     dut._log.warning(f"Test {__name__}.exact_posneg Starting...")
     dut.a.value = 0
@@ -329,7 +352,7 @@ async def test_posit_7b_add_exact_posneg(dut):
 
 
 @cocotb.test()
-async def test_posit_7b_add_rounded_posneg(dut):
+async def test_posit_32b_add_rounded_posneg(dut):
 
     dut._log.warning(f"Test {__name__}.rounded_posneg Starting...")
     dut.a.value = 0
@@ -349,7 +372,7 @@ async def test_posit_7b_add_rounded_posneg(dut):
 
 
 @cocotb.test()
-async def test_posit_7b_add_exact_negpos(dut):
+async def test_posit_32b_add_exact_negpos(dut):
 
     dut._log.warning(f"Test {__name__}.exact_negpos Starting...")
     dut.a.value = 0
@@ -370,7 +393,7 @@ async def test_posit_7b_add_exact_negpos(dut):
 
 
 @cocotb.test()
-async def test_posit_7b_add_rounded_negpos(dut):
+async def test_posit_32b_add_rounded_negpos(dut):
 
     dut._log.warning(f"Test {__name__}.rounded_negpos Starting...")
     dut.a.value = 0
