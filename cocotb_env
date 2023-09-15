@@ -8,6 +8,4 @@ COCOTB_HDL_TIMEPRECISION=1ps
 TOPLEVEL_LANG=verilog
 
 SIM=verilator
-SIM_BUILD_ARGS="--trace --coverage"
-
-PYTHONPATH="${COCOTB_TOP}:${PYTHONPATH}"
+SIM_BUILD_ARGS="--trace --trace-fst --trace-structs --coverage"

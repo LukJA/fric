@@ -42,10 +42,4 @@ jobs:
           python3 generate_logs.py
           python3 process_results.py >> $GITHUB_STEP_SUMMARY
 
-
-  verif_msim:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
     

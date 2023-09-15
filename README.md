@@ -8,10 +8,15 @@
     </h1>
 </p>
 
-### Usage
-For 32 bit free modelsim, get a 32 conda python and cocotb enviroment. Unit tests are all defined and called by the msim makefile
+## Usage
+```bash
+# Construct Environment
+source setup.sh
+# Run
+cd hdl/verif/cocotb
+pytest
+```
 
-For Icarus/Verilator, SV support is limited, but the standard makefile can be used.
 
 ## Simulation Notes
 

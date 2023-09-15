@@ -6,7 +6,9 @@ authors = [
     {name = "Henry Franks"},
     {name = "Harry Rodgers"},
 ]
-
+dependencies = [
+  'cocotb == 1.8.0',
+]
 [tool.setuptools.packages.find]
 where = ["src"]
 namespaces = false

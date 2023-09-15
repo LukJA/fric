@@ -2,7 +2,7 @@ import sys, os
 import glob
 
 try:
-    from cocotb_setup import *
+    import coco_wrapper.coco_wrapper
 except ModuleNotFoundError:
     sys.exit("Error: incorrect configuration! "
              "Please run `source setup.sh` from verif/cocotb.")
@@ -14,16 +14,16 @@ CWD = os.path.dirname(os.path.realpath(__file__))
 
 SRC = (
     [
-        f"{RTL_TOP}/typedef/common.sv",
-        f"{RTL_TOP}/alu/comparator.sv",
-        f"{RTL_TOP}/alu/two_comp.sv"
+        f"{coco_wrapper.RTL_TOP}/typedef/common.sv",
+        f"{coco_wrapper.RTL_TOP}/alu/comparator.sv",
+        f"{coco_wrapper.RTL_TOP}/alu/two_comp.sv"
     ]
-    + glob.glob(f"{RTL_TOP}/decode/luke_decoder/*.sv")
+    + glob.glob(f"{coco_wrapper.RTL_TOP}/decode/luke_decoder/*.sv")
 )
 
 def test_dff():
-    cocotb_test_module(
-        src=[f"{RTL_TOP}/dff.sv"],
+    coco_wrapper.cocotb_test_module(
+        src=[f"{coco_wrapper.RTL_TOP}/dff.sv"],
 
         toplevel="dff",
 
@@ -34,7 +34,7 @@ def test_dff():
     )
 
 def test_clo():
-    cocotb_test_module(
+    coco_wrapper.cocotb_test_module(
         src=SRC,
 
         toplevel="count_lead_one",
@@ -46,7 +46,7 @@ def test_clo():
     )
 
 def test_clo_24():
-    cocotb_test_module(
+    coco_wrapper.cocotb_test_module(
         src=SRC,
 
         toplevel="count_lead_one_24",
@@ -58,7 +58,7 @@ def test_clo_24():
     )
 
 def test_clz():
-    cocotb_test_module(
+    coco_wrapper.cocotb_test_module(
         src=SRC,
 
         toplevel="count_lead_zero",
@@ -70,7 +70,7 @@ def test_clz():
     )
 
 def test_cto():
-    cocotb_test_module(
+    coco_wrapper.cocotb_test_module(
         src=SRC,
 
         toplevel="count_tail_one",
@@ -82,7 +82,7 @@ def test_cto():
     )
 
 def test_ctz():
-    cocotb_test_module(
+    coco_wrapper.cocotb_test_module(
         src=SRC,
 
         toplevel="count_tail_zero",
@@ -94,7 +94,7 @@ def test_ctz():
     )
 
 def test_decoder():
-    cocotb_test_module(
+    coco_wrapper.cocotb_test_module(
         src=SRC,
 
         toplevel="format_decoder",
@@ -106,7 +106,7 @@ def test_decoder():
     )
 
 def test_ffo():
-    cocotb_test_module(
+    coco_wrapper.cocotb_test_module(
         src=SRC,
 
         toplevel="find_first_one",
@@ -118,7 +118,7 @@ def test_ffo():
     )
     
 def test_ffno():
-    cocotb_test_module(
+    coco_wrapper.cocotb_test_module(
         src=SRC,
 
         toplevel="find_first_n_ones",
