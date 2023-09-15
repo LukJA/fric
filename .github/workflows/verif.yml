@@ -32,8 +32,8 @@ jobs:
     - name: Verify with cocotb & verilator
       working-directory: ./hdl/verif/cocotb
       run: |
-        source setup.sh
-        pytest --junitxml=pytest_report.xml --report-log=logs/pytest.log
+        source workflow_cfg.sh
+        pytest --junitxml=pytest_report.xml --report-log=logs/pytest.log -n auto
 
     - name: Generate report
       if: always()
@@ -42,10 +42,26 @@ jobs:
           python3 generate_logs.py
           python3 process_results.py >> $GITHUB_STEP_SUMMARY
 
-
-  verif_msim:
-    runs-on: ubuntu-22.04
+  verif_model:
+    runs-on: macos-13
 
     steps:
-      - uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        pip --disable-pip-version-check install -r requirements.txt
+
+    - name: Verify Posit Model
+      working-directory: ./softmodels
+      run: |
+        pytest -n auto
+
+
     

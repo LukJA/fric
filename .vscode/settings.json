@@ -1,10 +1,12 @@
 {
-    "python.linting.enabled": false,
     "python.analysis.typeCheckingMode": "basic",
     "python.testing.pytestArgs": [
-        "softmodels/pyposit"
+        "hdl/verif/cocotb",
+        "softmodels/tests",
+        "-n=auto"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.linting.pylintEnabled": true
+    "python.defaultInterpreterPath": "env/bin/python",
+    "python.envFile": "${workspaceFolder}/cocotb_env"
 }

@@ -5,7 +5,7 @@ from cocotb.types import LogicArray
 from cocotb.clock import Timer
 from cocotb.binary import BinaryValue
 
-import pyposit_v2 as pyposit
+from pyposit.pyposit import PyPosit, PyPositConfig
 import random
 ## test seed
 random.seed("fric")
@@ -22,28 +22,29 @@ async def propagate(dut):
     await FallingEdge(dut.clk)
 
 async def test_ab(dut, i, j):
-    a = pyposit.posit_model(2, (i, 32))
-    b = pyposit.posit_model(2, (j, 32))
+    cfg_322 = PyPositConfig(n_bits=32, es=2)
+    a = PyPosit.from_float(cfg_322, i)
+    b = PyPosit.from_float(cfg_322, j)
     c = a + b
 
     dut._log.warning(f"Select a:{i} b:{j}")
-    dut._log.info(f"A:          {a}  :  {a.to_float()}")
-    dut._log.info(f"B:          {b}  :  {b.to_float()}")
+    dut._log.info(f"A:          {a}  :  {a.float_approximation}")
+    dut._log.info(f"B:          {b}  :  {b.float_approximation}")
 
-    one = BinaryValue(a.p_str) ## 1
+    one = BinaryValue(a.value) ## 1
     dut.a.value = one
-    two = BinaryValue(b.p_str) ## 1
+    two = BinaryValue(b.value) ## 1
     dut.b.value = two
 
     await propagate(dut)
-    r = pyposit.posit_model(2, str(dut.q.value))
+    r = PyPosit(cfg_322, str(dut.q.value))
 
-    dut._log.info(f"EXPECT:     {c}  :  {c.to_float()}")
-    if (dut.q.value == BinaryValue(c.p_str)):
-        dut._log.info(f"RESULT:     {dut.q.value}  :  {r.to_float()}")
+    dut._log.info(f"EXPECT:     {c}  :  {c.float_approximation}")
+    if (dut.q.value == BinaryValue(c.value)):
+        dut._log.info(f"RESULT:     {dut.q.value}  :  {r.float_approximation}")
     else:
-        dut._log.error(f"RESULT:     {dut.q.value}  :  {r.to_float()}")
-    assert dut.q.value == BinaryValue(c.p_str) ## 2
+        dut._log.error(f"RESULT:     {dut.q.value}  :  {r.float_approximation}")
+    assert dut.q.value == BinaryValue(c.value) ## 2
 
 
 
@@ -56,12 +57,13 @@ async def test_posit_adder_top(dut):
     j = 12
 
     dut._log.info(f"{i} + {j} = {i+j}")
-    a = pyposit.posit_model(2, (i, 32))
-    b = pyposit.posit_model(2, (j, 32))
+    cfg_322 = PyPositConfig(n_bits=32, es=2)
+    a = PyPosit.from_float(cfg_322, i)
+    b = PyPosit.from_float(cfg_322, j)
     c = a + b
-    dut._log.info(f"A:          {a}  :  {a.to_float()}")
-    dut._log.info(f"B:          {b}  :  {b.to_float()}")
-    dut._log.info(f"C:          {c}  :  {c.to_float()}")
+    dut._log.info(f"A:          {a}  :  {a.float_approximation}")
+    dut._log.info(f"B:          {b}  :  {b.float_approximation}")
+    dut._log.info(f"C:          {c}  :  {c.float_approximation}")
 
 
     dut.a.value = 0
@@ -75,9 +77,9 @@ async def test_posit_adder_top(dut):
     await FallingEdge(dut.clk)
     dut.rst.value = 1
 
-    one = BinaryValue(a.p_str) ## 1
+    one = BinaryValue(a.value) ## 1
     dut.a.value = one
-    two = BinaryValue(b.p_str) ## 1
+    two = BinaryValue(b.value) ## 1
     dut.b.value = two
 
     # get results into dc reg
@@ -232,14 +234,14 @@ async def test_posit_adder_top(dut):
 
     await FallingEdge(dut.clk)
 
-    r = pyposit.posit_model(2, str(dut.q.value))
+    r = PyPosit(cfg_322, str(dut.q.value))
 
-    dut._log.info(f"EXPECT:     {c}  :  {c.to_float()}")
-    if (dut.q.value == BinaryValue(c.p_str)):
-        dut._log.info(f"RESULT:     {dut.q.value}  :  {r.to_float()}")
+    dut._log.info(f"EXPECT:     {c}  :  {c.float_approximation}")
+    if (dut.q.value == BinaryValue(c.value)):
+        dut._log.info(f"RESULT:     {dut.q.value}  :  {r.float_approximation}")
     else:
-        dut._log.error(f"RESULT:     {dut.q.value}  :  {r.to_float()}")
-    assert dut.q.value == BinaryValue(c.p_str) ## 2
+        dut._log.error(f"RESULT:     {dut.q.value}  :  {r.float_approximation}")
+    assert dut.q.value == BinaryValue(c.value) ## 2
 
     # end
 

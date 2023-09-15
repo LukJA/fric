@@ -1,0 +1,11 @@
+COCOTB_TOP="hdl/verif/cocotb"
+HDL_TOP="hdl"
+RTL_TOP="hdl/rtl"
+
+COCOTB_HDL_TIMEUNIT=1ns
+COCOTB_HDL_TIMEPRECISION=1ps
+
+TOPLEVEL_LANG=verilog
+
+SIM=verilator
+SIM_BUILD_ARGS="--trace --trace-fst --trace-structs --coverage"

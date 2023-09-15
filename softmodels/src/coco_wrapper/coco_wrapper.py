@@ -1,11 +1,11 @@
 import os, sys
 from cocotb.runner import get_runner
 
-
+# Acquire environment variables
 COCOTB_TOP = os.getenv("COCOTB_TOP")
+HDL_TOP = os.getenv("RTL_TOP")
 RTL_TOP = os.getenv("RTL_TOP")
 
-# FIXME: these aren't currently included in the sim -- maybe buid_args?
 COCOTB_HDL_TIMEUNIT = os.getenv("COCOTB_HDL_TIMEUNIT")
 COCOTB_HDL_TIMEPRECISION = os.getenv("COCOTB_HDL_TIMEPREVISION")
 
