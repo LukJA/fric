@@ -1,4 +1,4 @@
-from coco_wrapper import TestWrapper
+from coco_wrapper import cocotb_test_wrapper
 
 src_dirs = [
     'decode/luke_decoder',
@@ -6,49 +6,57 @@ src_dirs = [
 ]
 
 def test_clo():
-    TestWrapper(
+    cocotb_test_wrapper(
         src=src_dirs,
-        toplevel='count_lead_one'
-    ).test('clo')
+        toplevel='count_lead_one',
+        test_search_path='clo'
+    )
 
 def test_clo_24():
-    TestWrapper(
+    cocotb_test_wrapper(
         src=src_dirs,
-        toplevel='count_lead_one_24'
-    ).test('count_lead_one_24')
+        toplevel='count_lead_one_24',
+        test_search_path='count_lead_one_24'
+    )
 
 def test_clz():
-    TestWrapper(
+    cocotb_test_wrapper(
         src=src_dirs,
-        toplevel='count_lead_zero'
-    ).test('clz')
+        toplevel='count_lead_zero',
+        test_search_path='clz'
+    )
 
 def test_cto():
-    TestWrapper(
+    cocotb_test_wrapper(
         src=src_dirs,
-        toplevel='count_tail_one'
-    ).test('cto')
+        toplevel='count_tail_one',
+        test_search_path='cto'
+    )
 
 def test_ctz():
-    TestWrapper(
+    cocotb_test_wrapper(
         src=src_dirs,
-        toplevel='count_tail_zero'
-    ).test('ctz')
+        toplevel='count_tail_zero',
+        test_search_path='ctz'
+    )
 
 def test_decoder():
-    TestWrapper(
+    cocotb_test_wrapper(
         src=src_dirs,
-        toplevel='format_decoder'
-    ).test('decoder')
+        toplevel='format_decoder',
+        test_search_path='decoder'
+    )
 
 def test_ffo():
-    TestWrapper(
+    cocotb_test_wrapper(
         src=src_dirs,
-        toplevel='find_first_one'
-    ).test('ffo')
+        toplevel='find_first_one',
+        test_search_path='ffo'
+    )
     
 def test_ffno():
-    TestWrapper(
+    cocotb_test_wrapper(
         src=src_dirs,
-        toplevel='find_first_n_ones'
-    ).test('ffno')
+        toplevel='find_first_n_ones',
+        test_search_path='ffno'
+    )

@@ -36,62 +36,61 @@ _default_sim_args = [
 # export COCOTB_HDL_TIMEUNIT=1ns
 # export COCOTB_HDL_TIMEPRECISION=1ps
 
-class TestWrapper():
-    __test__ = False
+def cocotb_test_wrapper(
+        *,
+        src=None,
+        inc=[INC_TOP],
+        toplevel,
+        sim=_default_sim,
+        sim_args=_default_sim_args,
+        test_search_path='.'):
+    runner = get_runner(sim)
+
+    if src is None:
+        src_files = SRC_TOP.resolve().glob('**/*.sv')
+    elif isinstance(src, list):
+        src_files = []
+        for src_dir in src:
+            src_path = ( SRC_TOP / src_dir ).resolve()
+            src_files.extend( src_path.glob('**/*.sv') )
+    else:
+        src_path = ( SRC_TOP / src ).resolve()
+
+        src_files = src_path.glob('**/*.sv')
+
+    prev_stack = inspect.stack()[1]
+    test_name = prev_stack.function
+    test_module = Path(prev_stack[1]).stem
     
-    def __init__(self, *,
-                 src=None,
-                 inc=[INC_TOP],
-                 toplevel,
-                 sim=_default_sim,
-                 sim_args=_default_sim_args):
-        
-        self.runner = get_runner(sim)
+    runner.build(
+        always=True,
+        verilog_sources=src_files,
+        includes=inc,
+        hdl_toplevel=toplevel,
+        build_args=sim_args,
+        build_dir=str(COCOTB_TOP / f'sim_build/{test_module}/{test_name}')
+    )
 
-        if src is None:
-            src_files = SRC_TOP.resolve().glob('**/*.sv')
-        elif isinstance(src, list):
-            src_files = []
-            for src_dir in src:
-                src_path = ( SRC_TOP / src_dir ).resolve()
-                src_files.extend( src_path.glob('**/*.sv') )
-        else:
-            src_path = ( SRC_TOP / src ).resolve()
+    caller_path = Path((inspect.stack()[1])[1])
+    caller_dir = caller_path.parent
+    full_path = (caller_dir / test_search_path).resolve()
 
-            src_files = src_path.glob('**/*.sv')
-        
-        self.runner.build(
-            always=True,
-            verilog_sources=src_files,
-            includes=inc,
+    modules = full_path.glob(
+        '**/cocotb_test_*.py'
+    )
+
+    for module_path in modules:
+        folder_path = str(module_path.parent)
+        module_name = module_path.stem
+
+        print("DEBUG:", folder_path, module_name)
+
+        sys.path.append(folder_path)
+
+        runner.test(
             hdl_toplevel=toplevel,
-            build_args=sim_args,
-            build_dir=str( COCOTB_TOP / f'sim_build/{toplevel}' )
+            test_module=module_name
         )
 
-        self._toplevel = toplevel
-
-    def test(self, search_path: str):
-        caller_path = Path((inspect.stack()[1])[1])
-        caller_dir = caller_path.parent
-        full_path = (caller_dir / search_path).resolve()
-
-        modules = full_path.glob(
-            '**/cocotb_test_*.py'
-        )
-
-        for module_path in modules:
-            folder_path = str(module_path.parent)
-            module_name = module_path.stem
-
-            print("DEBUG:", folder_path, module_name)
-
-            sys.path.append(folder_path)
-
-            self.runner.test(
-                hdl_toplevel=self._toplevel,
-                test_module=module_name
-            )
-
-            sys.path.remove(folder_path)
+        sys.path.remove(folder_path)
 
