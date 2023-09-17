@@ -32,7 +32,6 @@ jobs:
     - name: Verify with cocotb & verilator
       working-directory: ./hdl/verif/cocotb
       run: |
-        source workflow_cfg.sh
         export COCOTB_TOP=$( realpath . )
         export HDL_TOP=$( realpath $COCOTB_TOP/../.. )
         export RTL_TOP=$( realpath $HDL_TOP/rtl )
