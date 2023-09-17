@@ -26,14 +26,18 @@ jobs:
 
     - name: Install dependencies
       run: |
-        ./setup.sh
+        pip --disable-pip-version-check install -r requirements.txt
         HOMEBREW_NO_INSTALL_CLEANUP=1 brew install verilator
 
     - name: Verify with cocotb & verilator
       working-directory: ./hdl/verif/cocotb
       run: |
+        source workflow_cfg.sh
+        export COCOTB_TOP=$( realpath . )
+        export HDL_TOP=$( realpath $COCOTB_TOP/../.. )
+        export RTL_TOP=$( realpath $HDL_TOP/rtl )
         pytest --junitxml=pytest_report.xml --report-log=logs/pytest.log \
-                -n auto -W ignore::UserWarning
+               -n auto -W ignore::UserWarning
 
     - name: Generate report
       if: always()
