@@ -72,8 +72,9 @@ for item in modules:  # pylint: disable=C0206
 
         try:
             test_tree = ET.parse(test['filename'])
-        except:
+        except Exception as e:
             print("<h5>Internal error displaying test results.</h5>")
+            print(f"<h5>Error message: {e}.</h5>")
             continue
 
         test_root = test_tree.getroot()
