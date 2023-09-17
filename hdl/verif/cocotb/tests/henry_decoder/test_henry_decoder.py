@@ -1,4 +1,3 @@
-import pytest
 from coco_wrapper import cocotb_test_wrapper
 
 src_dirs = [
