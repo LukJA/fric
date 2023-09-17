@@ -27,12 +27,5 @@ echo "Installing env variables"
 export COCOTB_TOP=$( realpath ./hdl/verif/cocotb )
 export HDL_TOP=$( realpath $COCOTB_TOP/../.. )
 export RTL_TOP=$( realpath $HDL_TOP/rtl )
-
-export COCOTB_HDL_TIMEUNIT=1ns
-export COCOTB_HDL_TIMEPRECISION=1ps
-export TOPLEVEL_LANG=verilog
-export SIM=verilator
-export SIM_BUILD_ARGS="--trace --trace-fst --trace-structs --coverage"
-
 echo "Environment activated"
 echo

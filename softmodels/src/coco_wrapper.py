@@ -22,7 +22,11 @@ _default_sim_args = [
     "--coverage"
 ]
 
-class cocotb_test_wrapper():
+# TODO: include these exports in class
+# export COCOTB_HDL_TIMEUNIT=1ns
+# export COCOTB_HDL_TIMEPRECISION=1ps
+
+class TestWrapper():
     def __init__(self, *,
                  src=None,
                  inc=[f"{RTL_TOP}/include"],

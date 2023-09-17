@@ -1,7 +1,7 @@
-from coco_wrapper import cocotb_test_wrapper
+from coco_wrapper import TestWrapper
 
 def test_dff():
-    cocotb_test_wrapper(
+    TestWrapper(
         src='dff',
         toplevel='dff'
     ).test('.')
