@@ -33,5 +33,6 @@ export COCOTB_HDL_TIMEPRECISION=1ps
 export TOPLEVEL_LANG=verilog
 export SIM=verilator
 export SIM_BUILD_ARGS="--trace --trace-fst --trace-structs --coverage"
+
 echo "Environment activated"
 echo
