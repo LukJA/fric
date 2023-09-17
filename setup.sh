@@ -7,8 +7,10 @@ echo Run sudo apt install python3.10-venv
 
 # create environment in ./env
 # you can change this path if you want, so long as it's in .gitignore
-echo "Creating virtual environment in ./env..."
-python3 -m venv env
+if [ ! -d "env" ]; then
+    echo "Creating virtual environment in ./env..."
+    python3 -m venv env
+fi
 
 # install requirements
 echo "Activating environment..."
@@ -24,8 +26,8 @@ echo "Virtual environment setup complete!"
 
 echo 
 echo "Installing env variables"
-export COCOTB_TOP=$( realpath ./hdl/verif/cocotb )
-export HDL_TOP=$( realpath $COCOTB_TOP/../.. )
-export RTL_TOP=$( realpath $HDL_TOP/rtl )
+export HDL_TOP=$( realpath ./hdl )
+export RTL_TOP="$HDL_TOP/rtl"
+export COCOTB_TOP="$HDL_TOP/verif/cocotb"
 echo "Environment activated"
 echo

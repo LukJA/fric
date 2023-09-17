@@ -7,11 +7,21 @@ from cocotb.runner import get_runner
 
 
 # Acquire environment variables
-# TODO: check if these are empty and throw error
-COCOTB_TOP = Path(str(os.getenv("COCOTB_TOP")))
-HDL_TOP = Path(str(os.getenv("RTL_TOP")))
-RTL_TOP = Path(str(os.getenv("RTL_TOP")))
+
+_ENV_RTL_TOP = os.getenv("RTL_TOP")
+_ENV_COCOTB_TOP = os.getenv("COCOTB_TOP")
+
+if _ENV_RTL_TOP is None:
+    raise EnvironmentError("Incorrect config, RTL_TOP not set!")
+
+if _ENV_COCOTB_TOP is None:
+    raise EnvironmentError("Incorrect config, COCOTB_TOP not set!")
+
+COCOTB_TOP = Path(str(_ENV_COCOTB_TOP))
+
+RTL_TOP = Path(_ENV_RTL_TOP)
 SRC_TOP = RTL_TOP / 'src'
+INC_TOP = RTL_TOP / 'include'
 
 
 _default_sim = "verilator"
@@ -22,14 +32,16 @@ _default_sim_args = [
     "--coverage"
 ]
 
-# TODO: include these exports in class
+# TODO: include these env vars in class
 # export COCOTB_HDL_TIMEUNIT=1ns
 # export COCOTB_HDL_TIMEPRECISION=1ps
 
 class TestWrapper():
+    __test__ = False
+    
     def __init__(self, *,
                  src=None,
-                 inc=[f"{RTL_TOP}/include"],
+                 inc=[INC_TOP],
                  toplevel,
                  sim=_default_sim,
                  sim_args=_default_sim_args):
