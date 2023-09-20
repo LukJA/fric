@@ -4,7 +4,8 @@
         "hdl/verif/cocotb",
         "softmodels/tests",
         "-n=auto",
-        "-W ignore::UserWarning"
+        "-W ignore::UserWarning",
+        "-s"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,

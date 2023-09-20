@@ -17,7 +17,7 @@ if _ENV_RTL_TOP is None:
 if _ENV_COCOTB_TOP is None:
     raise EnvironmentError("Incorrect config, COCOTB_TOP not set!")
 
-COCOTB_TOP = Path(str(_ENV_COCOTB_TOP))
+COCOTB_TOP = Path(_ENV_COCOTB_TOP)
 
 RTL_TOP = Path(_ENV_RTL_TOP)
 SRC_TOP = RTL_TOP / 'src'
@@ -44,6 +44,22 @@ def cocotb_test_wrapper(
         sim=_default_sim,
         sim_args=_default_sim_args,
         test_search_path='.'):
+    """Utility function for easier cocotb testing.
+
+    See docs/verif/README.md for more info.
+
+    Args:
+        src:              [str] - source file paths to search for .sv files
+        inc:              [str] - include directories (passed straight to -I)
+        toplevel:         str   - the name of the top-level module
+        sim:              str   - the simulator to use
+        sim_args:         [str] - any arguments to pass to the simulator
+        test_search_path: str   - path to recursively search for test modules
+
+    Returns:
+        None
+    """
+
     runner = get_runner(sim)
 
     if src is None:
@@ -61,17 +77,19 @@ def cocotb_test_wrapper(
     prev_stack = inspect.stack()[1]
     test_name = prev_stack.function
     test_module = Path(prev_stack[1]).stem
+
+    build_dir = str(COCOTB_TOP / f'sim_build/{test_module}/{test_name}')
     
     runner.build(
         always=True,
-        verilog_sources=src_files,
+        verilog_sources=src_files, # type: ignore
         includes=inc,
         hdl_toplevel=toplevel,
         build_args=sim_args,
-        build_dir=str(COCOTB_TOP / f'sim_build/{test_module}/{test_name}')
+        build_dir=build_dir
     )
 
-    caller_path = Path((inspect.stack()[1])[1])
+    caller_path = Path(prev_stack[1])
     caller_dir = caller_path.parent
     full_path = (caller_dir / test_search_path).resolve()
 
@@ -93,4 +111,3 @@ def cocotb_test_wrapper(
         )
 
         sys.path.remove(folder_path)
-
