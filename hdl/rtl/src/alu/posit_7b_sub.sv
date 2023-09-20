@@ -1,3 +1,5 @@
+`include "common.svh"
+
 import common::*;
 
 module posit_7b_sub (

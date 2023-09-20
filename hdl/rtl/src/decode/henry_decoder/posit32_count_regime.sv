@@ -1,3 +1,5 @@
+`include "posit_types.svh"
+
 import posit_types::*;
 
 module count_regime_16 (

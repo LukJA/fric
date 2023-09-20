@@ -1,4 +1,6 @@
 // returns the input with only the MSB 1 set
+`include "common.svh"
+
 import common::*;
 
 module find_first_n_ones #(

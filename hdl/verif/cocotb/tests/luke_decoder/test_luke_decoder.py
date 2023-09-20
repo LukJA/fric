@@ -1,130 +1,62 @@
-import sys, os
-import glob
+from coco_wrapper import cocotb_test_wrapper
 
-try:
-    import coco_wrapper.coco_wrapper
-except ModuleNotFoundError:
-    sys.exit("Error: incorrect configuration! "
-             "Please run `source setup.sh` from verif/cocotb.")
-
-
-CWD = os.path.dirname(os.path.realpath(__file__))
-
-###############################################################################
-
-SRC = (
-    [
-        f"{coco_wrapper.RTL_TOP}/typedef/common.sv",
-        f"{coco_wrapper.RTL_TOP}/alu/comparator.sv",
-        f"{coco_wrapper.RTL_TOP}/alu/two_comp.sv"
-    ]
-    + glob.glob(f"{coco_wrapper.RTL_TOP}/decode/luke_decoder/*.sv")
-)
-
-def test_dff():
-    coco_wrapper.cocotb_test_module(
-        src=[f"{coco_wrapper.RTL_TOP}/dff.sv"],
-
-        toplevel="dff",
-
-        modulepath=f"{CWD}/dff",
-        modules=[
-            "cocotb_test_dff"
-        ]
-    )
+src_dirs = [
+    'decode/luke_decoder',
+    'alu'
+]
 
 def test_clo():
-    coco_wrapper.cocotb_test_module(
-        src=SRC,
-
-        toplevel="count_lead_one",
-
-        modulepath=f"{CWD}/clo",
-        modules=[
-            "cocotb_test_clo"
-        ]
+    cocotb_test_wrapper(
+        src=src_dirs,
+        toplevel='count_lead_one',
+        test_search_path='clo'
     )
 
 def test_clo_24():
-    coco_wrapper.cocotb_test_module(
-        src=SRC,
-
-        toplevel="count_lead_one_24",
-
-        modulepath=f"{CWD}/count_lead_one_24",
-        modules=[
-            "cocotb_test_count_lead_one_24"
-        ]
+    cocotb_test_wrapper(
+        src=src_dirs,
+        toplevel='count_lead_one_24',
+        test_search_path='count_lead_one_24'
     )
 
 def test_clz():
-    coco_wrapper.cocotb_test_module(
-        src=SRC,
-
-        toplevel="count_lead_zero",
-
-        modulepath=f"{CWD}/clz",
-        modules=[
-            "cocotb_test_clz"
-        ]
+    cocotb_test_wrapper(
+        src=src_dirs,
+        toplevel='count_lead_zero',
+        test_search_path='clz'
     )
 
 def test_cto():
-    coco_wrapper.cocotb_test_module(
-        src=SRC,
-
-        toplevel="count_tail_one",
-
-        modulepath=f"{CWD}/cto",
-        modules=[
-            "cocotb_test_cto"
-        ]
+    cocotb_test_wrapper(
+        src=src_dirs,
+        toplevel='count_tail_one',
+        test_search_path='cto'
     )
 
 def test_ctz():
-    coco_wrapper.cocotb_test_module(
-        src=SRC,
-
-        toplevel="count_tail_zero",
-
-        modulepath=f"{CWD}/ctz",
-        modules=[
-            "cocotb_test_ctz"
-        ]
+    cocotb_test_wrapper(
+        src=src_dirs,
+        toplevel='count_tail_zero',
+        test_search_path='ctz'
     )
 
 def test_decoder():
-    coco_wrapper.cocotb_test_module(
-        src=SRC,
-
-        toplevel="format_decoder",
-
-        modulepath=f"{CWD}/decoder",
-        modules=[
-            "cocotb_test_decoder"
-        ]
+    cocotb_test_wrapper(
+        src=src_dirs,
+        toplevel='format_decoder',
+        test_search_path='decoder'
     )
 
 def test_ffo():
-    coco_wrapper.cocotb_test_module(
-        src=SRC,
-
-        toplevel="find_first_one",
-
-        modulepath=f"{CWD}/ffo",
-        modules=[
-            "cocotb_test_ffo"
-        ]
+    cocotb_test_wrapper(
+        src=src_dirs,
+        toplevel='find_first_one',
+        test_search_path='ffo'
     )
     
 def test_ffno():
-    coco_wrapper.cocotb_test_module(
-        src=SRC,
-
-        toplevel="find_first_n_ones",
-
-        modulepath=f"{CWD}/ffno",
-        modules=[
-            "cocotb_test_ffno"
-        ]
+    cocotb_test_wrapper(
+        src=src_dirs,
+        toplevel='find_first_n_ones',
+        test_search_path='ffno'
     )

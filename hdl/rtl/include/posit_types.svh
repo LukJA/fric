@@ -1,3 +1,6 @@
+`ifndef _POSIT_VH_
+`define _POSIT_VH_
+
 package posit_types;
 
     /* handy logic type for sign bit */
@@ -21,3 +24,5 @@ package posit_types;
     } posit64_t;
 
 endpackage
+
+`endif // _POSIT_VH_

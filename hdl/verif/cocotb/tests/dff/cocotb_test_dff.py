@@ -1,11 +1,8 @@
 ## test_dff.py
 
-import random
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly
-from cocotb.types import LogicArray
-from cocotb.clock import Timer
 
 
 @cocotb.test()

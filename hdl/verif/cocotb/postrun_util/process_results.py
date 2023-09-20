@@ -1,12 +1,18 @@
 import xml.etree.ElementTree as ET
 
-tree = ET.parse('../pytest_report.xml')
+from pathlib import Path
+
+
+root_filepath = (Path(__file__).parent / '..').resolve()
+
+tree = ET.parse(root_filepath / 'pytest_report.xml')
 root = tree.getroot()
 
 print('# Test Results')
 
-## GENERATE SUMMARY
-###################
+######################
+## GENERATE SUMMARY ##
+######################
 
 modules = {}
 failures = {}
@@ -30,9 +36,9 @@ for test in root[0]:
     split_idx = module_name.rindex('.')
     mod_path = module_name[:split_idx].replace('.', '/')    
     mod_name = module_name[split_idx+1:]
-    dir_name = test_name.replace('test_', '')
-    result_filename = (
-        f"../sim_build/{mod_path}/{dir_name}/{test_name}.results.xml"
+    result_filename = str(
+        root_filepath /
+        f"sim_build/{mod_name}/{test_name}/{test_name}.results.xml"
     )
 
     if mod_path not in modules:
@@ -72,8 +78,8 @@ for item in modules:  # pylint: disable=C0206
 
         try:
             test_tree = ET.parse(test['filename'])
-        except:
-            print("<h5>Internal error displaying test results.</h5>")
+        except Exception as e:
+            print(f"<h5>Internal error displaying test results: {e}.</h5>")
             continue
 
         test_root = test_tree.getroot()
@@ -83,7 +89,9 @@ for item in modules:  # pylint: disable=C0206
         errors = {}
         to_process = {}
 
-        with open(f"../logs/generated/{item}/{test['test_name']}.log") as logfile:
+        log_filepath = root_filepath / f"logs/generated/{item}/{test['test_name']}.log"
+
+        with open(log_filepath) as logfile:
             for i, line in enumerate(logfile):
                 if 'failed' in line:
                     test_name = line.split(' ')[-2]

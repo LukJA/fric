@@ -3,7 +3,9 @@
     "python.testing.pytestArgs": [
         "hdl/verif/cocotb",
         "softmodels/tests",
-        "-n=auto"
+        "-n=auto",
+        "-W ignore::UserWarning",
+        "-s"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,

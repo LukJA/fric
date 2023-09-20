@@ -1,3 +1,5 @@
+`include "common.svh"
+
 import common::*;
 
 module comparator #(
@@ -44,4 +46,3 @@ module comparator #(
 
 
 endmodule : comparator
-

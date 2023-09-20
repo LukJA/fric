@@ -1,4 +1,6 @@
 // takes a logic bus and reports the twos complement of it
+`include "common.svh"
+
 import common::*;
 
 module two_comp #(

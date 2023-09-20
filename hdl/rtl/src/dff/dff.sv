@@ -19,4 +19,3 @@ end
 // end
 // `endif
 endmodule : dff
-

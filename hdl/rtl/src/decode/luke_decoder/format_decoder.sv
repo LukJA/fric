@@ -1,5 +1,7 @@
 // takes a posit bus and extracts the relevant
 // regions as digital signed byte values
+`include "common.svh"
+
 import common::*;
 
 // Comb
