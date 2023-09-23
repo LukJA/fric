@@ -5,8 +5,8 @@ module posit_adder #(
     parameter int EN = 1,
     parameter int SF = int'($pow(2, EN)),
     // Bits required for each field (+ sign bit)
-    parameter int W_REG = $clog2(WIDTH) + 1,
-    parameter int W_EXP = $clog2(WIDTH) + 1,
+    parameter int W_REG = $clog2(WIDTH) - 1,
+    parameter int W_EXP = $clog2(WIDTH),
     parameter int W_MAN = WIDTH
 ) (
     input logic clk,
