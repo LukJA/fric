@@ -19,11 +19,10 @@ module normalise #(
     // get normalisation shift
     logic signed [W_REG-1:0] normz;
     count_lead_zero #(
-        .W_IN (W_MAN),
-        .W_OUT(W_REG)
+        .W_IN (W_MAN)
     ) m_mantossa_clz (
-        .a(mantissa_sum),
-        .q(normz)
+        .vec(mantissa_sum),
+        .cnt(normz)
     );
 
     // implicit barrell shift to exclude leading '1'
@@ -52,19 +51,17 @@ module normalise #(
     );
 
     count_lead_zero #(
-        .W_IN (W_EXP),
-        .W_OUT(W_REG)
+        .W_IN (W_EXP)
     ) m_clz_exp (
-        .a(a_exponent),
-        .q(shamt_exp)
+        .vec(a_exponent),
+        .cnt(shamt_exp)
     );
 
     count_lead_zero #(
-        .W_IN (W_EXP),
-        .W_OUT(W_REG)
+        .W_IN (W_EXP)
     ) m_clz_exp_bar (
-        .a(b_exp_tc),
-        .q(shamt_bar)
+        .vec(b_exp_tc),
+        .cnt(shamt_bar)
     );
 
     logic unsigned [W_EXP-1:0] exp_adj_a, exp_adj_b;
