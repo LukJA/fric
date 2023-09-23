@@ -20,7 +20,7 @@ parameter int CLB_IN = int'($pow(2, $clog2(W_IN)));
 logic [CLB_IN-1:0] expanded_vec;
 assign expanded_vec = { vec, { (CLB_IN-W_IN) {L_BIT} } };
 
-clb_tree_node #( .W_IN(CLB_IN), .BRANCHES(2), .L_BIT(1))
+clb_tree_node #( .W_IN(CLB_IN), .BRANCHES(2), .L_BIT(0))
     i_clb_tree (
         .vec(expanded_vec),
         .cnt(cnt),
@@ -57,7 +57,6 @@ module clb_tree_node #(
         end else begin
             parameter SUB_WIDTH = W_IN / BRANCHES;
             parameter SUB_CNT_W = $clog2(SUB_WIDTH);
-
 
             logic [SUB_CNT_W-1:0] counts [BRANCHES-1:0];
             logic [BRANCHES-1:0] valids;
