@@ -9,8 +9,8 @@ module format_decoder #(
     parameter int WIDTH = 7,
     parameter int EN = 1,
     // Bits required for each field (+ sign bit)
-    parameter int W_REG = $clog2(WIDTH)+1,
-    parameter int W_EXP = $clog2(WIDTH)+1,
+    parameter int W_REG = $clog2(WIDTH),
+    parameter int W_EXP = $clog2(WIDTH),
     parameter int W_MAN = WIDTH
 ) (
     input logic [WIDTH-1:0] posit,
@@ -23,49 +23,46 @@ module format_decoder #(
     logic [WIDTH-1:0] posit_comp;
     logic [WIDTH-2:0] posit_reduced;
 
-// generate complements of the inputs
+    // generate complements of the inputs
     two_comp #(WIDTH) m_input_comp (
         .a(posit),
         .q(posit_comp)
     );
 
-// Extract sign bit
-    always_comb begin : sign_extract
-        if (posit[WIDTH-1] == 0) begin
-            sign = POS;
-        end else begin
-            sign = NEG;
-        end
-    end
-// Explicit select the positive form
+    // Extract sign bit
+    assign sign = (posit[WIDTH-1] == 0) ? POS : NEG;
+
+    // Explicit select the positive form
     assign posit_reduced = (sign == POS) ? posit[WIDTH-2:0] : posit_comp[WIDTH-2:0];
 
-// Now the hard part - length decomposition
-// find the length of the regime region and convert it to a regime value
+    // Now the hard part - length decomposition
+    // find the length of the regime region and convert it to a regime value
     logic [W_REG-1:0] leading_ones;
     logic [W_REG-1:0] leading_zeroes;
     logic [W_REG-1:0] regime_len;
     logic signed [W_REG-1:0] negative_regime;
     logic signed [W_REG-1:0] subbed_regime;
 
+    logic clo_valid, clz_valid;
+
     count_lead_one #(
-        .W_IN ($bits(posit_reduced)),
-        .W_OUT(W_REG)
+        .W_IN ($bits(posit_reduced))
     ) m_regime_clo (
-        .a(posit_reduced),
-        .q(leading_ones)
+        .vec(posit_reduced),
+        .cnt(leading_ones),
+        .valid(clo_valid)
     );
     count_lead_zero #(
-        .W_IN ($bits(posit_reduced)),
-        .W_OUT(W_REG)
+        .W_IN ($bits(posit_reduced))
     ) m_regime_clz (
-        .a(posit_reduced),
-        .q(leading_zeroes)
+        .vec(posit_reduced),
+        .cnt(leading_zeroes),
+        .valid(clz_valid)
     );
     assign regime_len = (posit_reduced[WIDTH-2] == 1'b1) ? leading_ones : leading_zeroes;
 
-// Regime value conversion
-// generates a signed regime value
+    // Regime value conversion
+    // generates a signed regime value
     two_comp #(W_REG) m_regime_comp (
         .a(regime_len),
         .q(negative_regime)
@@ -73,12 +70,12 @@ module format_decoder #(
     assign subbed_regime = regime_len - 1;
     assign regime  = (posit_reduced[WIDTH-2] == 1'b0) ? negative_regime : subbed_regime;
 
-// The remaining sections may or may not exist
-// The logic here is a bit dodgy
-// we are extracting region lengths, and then 'muxing' the outputs using them as indices
-// how about generating a mask, and then doing the realignment as a mux :)
+    // The remaining sections may or may not exist
+    // The logic here is a bit dodgy
+    // we are extracting region lengths, and then 'muxing' the outputs using them as indices
+    // how about generating a mask, and then doing the realignment as a mux :)
 
-// Step 1: Create a regime region MSB mask
+    // Step 1: Create a regime region MSB mask
     logic [WIDTH-2:0] r_mask;
     logic [WIDTH-2:0] r_unmask;
     // logic [WIDTH-2:0] r_unmask_prime;
@@ -88,7 +85,7 @@ module format_decoder #(
     //     .q(r_mask)
     // );
 
-// assign an ant-mask for valid nought and exponent locations
+    // assign an ant-mask for valid nought and exponent locations
     // always_comb
     // begin
     //     r_unmask = ~r_mask;
@@ -111,17 +108,17 @@ module format_decoder #(
     assign r_mask  = (posit_reduced[WIDTH-2] == 1'b0) ? zero_mask : one_mask;
     assign r_unmask = ~r_mask;
 
-// Step 2: split the remainder mask into nought, exp, and fraction masks
+    // Step 2: split the remainder mask into nought, exp, and fraction masks
     logic [WIDTH-2:0] nought_mask;
     logic [WIDTH-2:0] exp_mask;
     logic [WIDTH-2:0] frac_mask;
 
-// Nought is the first 1 that appears in the anti-mask
+    // Nought is the first 1 that appears in the anti-mask
     find_first_one #(WIDTH - 1) m_ffo_nought (
         .a(r_unmask),
         .q(nought_mask)
     );
-// exp is the next #EN ones:
+    // exp is the next #EN ones:
     find_first_n_ones #(
         .W(WIDTH - 1),
         .N(EN)
@@ -129,10 +126,11 @@ module format_decoder #(
         .a(r_unmask & ~nought_mask),
         .q(exp_mask)
     );
-// finally the fraction is just the remaining mask
+
+    // finally the fraction is just the remaining mask
     assign frac_mask = r_unmask & (~nought_mask) & (~exp_mask);
 
-// debug signals
+    // debug signals
     logic [WIDTH-2:0] nought_masked;
     logic [WIDTH-2:0] exp_masked;
     logic [WIDTH-2:0] frac_masked;
@@ -140,17 +138,17 @@ module format_decoder #(
     assign frac_masked = frac_mask & posit_reduced;
     assign exp_masked = exp_mask & posit_reduced;
 
-// Both the fraction and the exponent require alignment
-// This is done with explicit generation of every version, and a muxing
-// selection of the correct desired position based on a MSB/LSB bit flag
-// This is possibly faster than a CLO/CLZ tree and a barrell shifter
+    // Both the fraction and the exponent require alignment
+    // This is done with explicit generation of every version, and a muxing
+    // selection of the correct desired position based on a MSB/LSB bit flag
+    // This is possibly faster than a CLO/CLZ tree and a barrell shifter
 
-// the fraction is missing it's leading 1 that signifies the point location
-// and needs to be aligned to the MSB, as it is right-expanding
+    // the fraction is missing it's leading 1 that signifies the point location
+    // and needs to be aligned to the MSB, as it is right-expanding
 
-// create an MSB+1 bit identifier
+    // create an MSB+1 bit identifier
     logic [WIDTH-2:0] frac_MSB_bit;
-// First bit is always the same
+    // First bit is always the same
     assign frac_MSB_bit[WIDTH-2] = frac_mask[WIDTH-2];
     generate
         for (genvar k = WIDTH-3; k >= 0; k--) begin : gen_frac_MSB
@@ -158,7 +156,7 @@ module format_decoder #(
         end
     endgenerate
 
-// Now generate all shifted versions of the frac region and select the right one
+    // Now generate all shifted versions of the frac region and select the right one
     logic [  WIDTH-2:0] frac_shifted_array[WIDTH-2:0];
     logic [2*WIDTH-2:0] extended_f;
     assign extended_f = {frac_mask & posit_reduced, {WIDTH{1'b0}}};
@@ -170,7 +168,7 @@ module format_decoder #(
     logic [WIDTH-2:0] frac_shifted;
     assign frac_shifted = frac_shifted_array.or();
 
-// The mantissa field can now be extracted
+    // The mantissa field can now be extracted
     generate
         if (W_MAN >= WIDTH) begin : gen_export_mantissa_large
             assign mantissa = {1'b1, frac_shifted, {(W_MAN-1-$bits(frac_shifted)){1'b0}}};
@@ -179,11 +177,11 @@ module format_decoder #(
         end
     endgenerate
 
-// The exponent needs to be correctly shifted to remove trailing zeroes but
-// can be right aligned as a valid whole number value
-// Hence repeat the above extraction semantics
+    // The exponent needs to be correctly shifted to remove trailing zeroes but
+    // can be right aligned as a valid whole number value
+    // Hence repeat the above extraction semantics
 
-// create a LSB bit identifier
+    // create a LSB bit identifier
     logic [WIDTH-2:0] exp_LSB_bit;
     assign exp_LSB_bit[0] = exp_mask[0];
     generate
@@ -192,7 +190,7 @@ module format_decoder #(
         end
     endgenerate
 
-// Now generate all shifted versions of the exp region and select the right one
+    // Now generate all shifted versions of the exp region and select the right one
     logic [2*WIDTH-2:0] extended_e;
     assign extended_e = {{WIDTH{1'b0}}, exp_mask & posit_reduced};
     logic [WIDTH-2:0] exp_shifted_array[WIDTH-2:0];
@@ -204,7 +202,7 @@ module format_decoder #(
     logic [WIDTH-2:0] exp_shifted;
     assign exp_shifted = exp_shifted_array.or();
 
-// The exponent field can now be extracted
+    // The exponent field can now be extracted
     generate
         if (W_EXP >= $bits(exp_shifted)) begin : gen_exp_out_large
             assign exponent = {{(W_EXP-$bits(exp_shifted)){1'b0}}, exp_shifted};

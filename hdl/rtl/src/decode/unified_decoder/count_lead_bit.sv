@@ -1,16 +1,15 @@
 // returns the unsigned integer value of the index of the first chosen bit
 
 module count_lead_bit #(
-    parameter   W_IN    = 8,
-    parameter   W_OUT   = 3
+    parameter W_IN = 8
 ) (
-    input  logic [W_IN-1:0]  vec,   /* bit vector              */
-    output logic [W_OUT-1:0] cnt,   /* count                   */
-    output logic             valid  /* is output not all 0/1 ? */
+    input  logic [W_IN-1:0]           vec,   // bit vector
+    output logic [$clog2(W_IN-1)-1:0] cnt,   // count
+    output logic                      valid  // is output not all 0/1 ?
 );
 
 // leading bit
-parameter bit L_BIT = 0; // this doesn't have a default value
+parameter bit L_BIT; // this doesn't have a default value
 
 // we don't need users to be able to override this
 parameter int CLB_IN = int'($pow(2, $clog2(W_IN)));
@@ -18,9 +17,9 @@ parameter int CLB_IN = int'($pow(2, $clog2(W_IN)));
 // we need our tree to be a power of 2 to match our tree structure
 // so we pad the right hand side of our vector
 logic [CLB_IN-1:0] expanded_vec;
-assign expanded_vec = { vec, { (CLB_IN-W_IN) {L_BIT} } };
+assign expanded_vec = { vec, { (CLB_IN-W_IN) {~L_BIT} } };
 
-clb_tree_node #( .W_IN(CLB_IN), .BRANCHES(2), .L_BIT(0))
+clb_tree_node #( .W_IN(CLB_IN), .BRANCHES(2), .L_BIT(L_BIT))
     i_clb_tree (
         .vec(expanded_vec),
         .cnt(cnt),
@@ -28,6 +27,26 @@ clb_tree_node #( .W_IN(CLB_IN), .BRANCHES(2), .L_BIT(0))
     );
 
 endmodule : count_lead_bit
+
+module count_lead_one #(
+    parameter W_IN = 8
+) (
+    input  logic [W_IN-1:0]           vec,
+    output logic [$clog2(W_IN-1)-1:0] cnt,
+    output logic                      valid
+);
+    count_lead_bit #( .W_IN(W_IN), .L_BIT(0) ) i_count_lead_bit (.*);
+endmodule : count_lead_one
+
+module count_lead_zero #(
+    parameter W_IN = 8
+) (
+    input  logic [W_IN-1:0]           vec,
+    output logic [$clog2(W_IN-1)-1:0] cnt,
+    output logic                      valid
+);
+    count_lead_bit #( .W_IN(W_IN), .L_BIT(1) ) i_count_lead_bit (.*);
+endmodule : count_lead_zero
 
 module clb_tree_node #(
     parameter W_IN = 8,
@@ -76,14 +95,14 @@ module clb_tree_node #(
 
             if (BRANCHES == 2) begin
                 priority_encoder_2 i_priority_encoder_2_valid (
-                    .leading_bit( L_BIT ),
+                    .leading_bit( 0 ),
                     .slice( valids ),
                     .count( select ),
                     .valid( valid )
                 );
             end else if (BRANCHES == 4) begin
                 priority_encoder_4 i_priority_encoder_4_valid (
-                    .leading_bit( L_BIT ),
+                    .leading_bit( 0 ),
                     .slice( valids ),
                     .count( select ),
                     .valid( valid )

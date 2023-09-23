@@ -68,7 +68,10 @@ def cocotb_test_wrapper(
         src_files = []
         for src_dir in src:
             src_path = ( SRC_TOP / src_dir ).resolve()
-            src_files.extend( src_path.glob('**/*.sv') )
+            if src_path.is_file():
+                src_files.append(src_path)
+            else:
+                src_files.extend( src_path.glob('**/*.sv') )
     else:
         src_path = ( SRC_TOP / src ).resolve()
 

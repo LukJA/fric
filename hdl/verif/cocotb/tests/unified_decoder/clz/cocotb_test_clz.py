@@ -4,15 +4,9 @@ from cocotb.binary import BinaryValue
 
 async def test_value(dut, bin_str):
 
-    if bin_str[1] == '0' and '1' in bin_str:
-        valid = 1
-        expected = bin_str[0:].index('1')
-    elif bin_str[1] == '1' and '0' in bin_str:
-        valid = 1
-        expected = bin_str[1:].index('0')
-    else:
-        valid = 0
-        expected = 32
+    valid = '0' in bin_str
+    expected = bin_str.index('0') if valid else None
+
     dut.vec.value = BinaryValue(bin_str)
 
     await Timer(1, "ns")
@@ -30,9 +24,9 @@ async def test_value(dut, bin_str):
     
 
 @cocotb.test()
-async def test_count_regime(dut):
+async def test_count_leading_zeros(dut):
     dut._log.warning(f"Test {__name__} Starting...")
 
-    await test_value(dut, "00101000")
-    await test_value(dut, "00001000")
-    await test_value(dut, "00000000")
+    for i in range(9):
+        v = "0"*i + "1"*(8-i)
+        await test_value(dut, v)
