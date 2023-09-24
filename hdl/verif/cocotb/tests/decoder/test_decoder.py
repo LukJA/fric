@@ -1,7 +1,7 @@
 from coco_wrapper import cocotb_test_wrapper
 
 
-src_dirs = [ 'decode/', 'alu/two_comp.sv' ]
+src_dirs = [ 'decode/', 'alu/logic/two_comp.sv' ]
 
 
 def test_clz():
