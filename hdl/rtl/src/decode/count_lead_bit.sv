@@ -3,37 +3,34 @@
 module count_lead_bit #(
     parameter W_IN = 8
 ) (
-    input  logic [W_IN-1:0]           vec,   // bit vector
-    output logic [$clog2(W_IN-1)-1:0] cnt,   // count
-    output logic                      valid  // is output not all 0/1 ?
+    input  logic [W_IN-1:0]         vec,     // bit vector
+    output logic [$clog2(W_IN)-1:0] cnt,   // count
+    output logic                    valid    // is output not all 0/1 ?
 );
 
-// leading bit
-parameter bit L_BIT; // this doesn't have a default value
+    // leading bit
+    parameter bit L_BIT; // this doesn't have a default value
 
-// we don't need users to be able to override this
-parameter int CLB_IN = int'($pow(2, $clog2(W_IN)));
+    parameter int W_INT = int'( $pow(2, $clog2(W_IN)) );
 
-// we need our tree to be a power of 2 to match our tree structure
-// so we pad the right hand side of our vector
-logic [CLB_IN-1:0] expanded_vec;
-assign expanded_vec = { vec, { (CLB_IN-W_IN) {~L_BIT} } };
+    logic [W_INT-1 : 0] vec_pad;
+    assign vec_pad = { vec, { (W_INT - W_IN){L_BIT} } };
 
-clb_tree_node #( .W_IN(CLB_IN), .BRANCHES(2), .L_BIT(L_BIT))
-    i_clb_tree (
-        .vec(expanded_vec),
-        .cnt(cnt),
-        .valid(valid)
-    );
+    clb_tree_node #( .W_IN(W_INT), .BRANCHES(2), .L_BIT(L_BIT))
+        i_clb_tree (
+            .vec(vec_pad),
+            .cnt(cnt),
+            .valid(valid)
+        );
 
 endmodule : count_lead_bit
 
 module count_lead_one #(
     parameter W_IN = 8
 ) (
-    input  logic [W_IN-1:0]           vec,
-    output logic [$clog2(W_IN-1)-1:0] cnt,
-    output logic                      valid
+    input  logic [W_IN-1:0]         vec,
+    output logic [$clog2(W_IN)-1:0] cnt,
+    output logic                    valid
 );
     count_lead_bit #( .W_IN(W_IN), .L_BIT(0) ) i_count_lead_bit (.*);
 endmodule : count_lead_one
@@ -42,7 +39,7 @@ module count_lead_zero #(
     parameter W_IN = 8
 ) (
     input  logic [W_IN-1:0]           vec,
-    output logic [$clog2(W_IN-1)-1:0] cnt,
+    output logic [$clog2(W_IN)-1:0] cnt,
     output logic                      valid
 );
     count_lead_bit #( .W_IN(W_IN), .L_BIT(1) ) i_count_lead_bit (.*);
@@ -74,8 +71,8 @@ module clb_tree_node #(
                 .valid(valid)
             );
         end else begin
-            parameter SUB_WIDTH = W_IN / BRANCHES;
-            parameter SUB_CNT_W = $clog2(SUB_WIDTH);
+            parameter int SUB_WIDTH = int'($floor(W_IN / BRANCHES));
+            parameter int SUB_CNT_W = $clog2(SUB_WIDTH);
 
             logic [SUB_CNT_W-1:0] counts [BRANCHES-1:0];
             logic [BRANCHES-1:0] valids;

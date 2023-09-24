@@ -20,8 +20,11 @@ module format_decoder #(
     output logic unsigned [W_MAN-1:0] mantissa
 );
 
+    parameter W_RED = WIDTH - 1; // reduced (no sign) for width
+    parameter MSB = WIDTH - 2;
+
     logic [WIDTH-1:0] posit_comp;
-    logic [WIDTH-2:0] posit_reduced;
+    logic [W_RED-1:0] posit_reduced;
 
     // generate complements of the inputs
     two_comp #(WIDTH) m_input_comp (
@@ -33,7 +36,8 @@ module format_decoder #(
     assign sign = (posit[WIDTH-1] == 0) ? POS : NEG;
 
     // Explicit select the positive form
-    assign posit_reduced = (sign == POS) ? posit[WIDTH-2:0] : posit_comp[WIDTH-2:0];
+    assign posit_reduced =
+        (sign == POS) ? posit[W_RED-1:0] : posit_comp[W_RED-1:0];
 
     // Now the hard part - length decomposition
     // find the length of the regime region and convert it to a regime value
@@ -59,7 +63,7 @@ module format_decoder #(
         .cnt(leading_zeroes),
         .valid(clz_valid)
     );
-    assign regime_len = (posit_reduced[WIDTH-2] == 1'b1) ? leading_ones : leading_zeroes;
+    assign regime_len = (posit_reduced[MSB] == 1'b1) ? leading_ones : leading_zeroes;
 
     // Regime value conversion
     // generates a signed regime value
@@ -68,7 +72,7 @@ module format_decoder #(
         .q(negative_regime)
     );
     assign subbed_regime = regime_len - 1;
-    assign regime  = (posit_reduced[WIDTH-2] == 1'b0) ? negative_regime : subbed_regime;
+    assign regime  = (posit_reduced[MSB] == 1'b0) ? negative_regime : subbed_regime;
 
     // The remaining sections may or may not exist
     // The logic here is a bit dodgy
@@ -76,67 +80,43 @@ module format_decoder #(
     // how about generating a mask, and then doing the realignment as a mux :)
 
     // Step 1: Create a regime region MSB mask
-    logic [WIDTH-2:0] r_mask;
-    logic [WIDTH-2:0] r_unmask;
-    // logic [WIDTH-2:0] r_unmask_prime;
 
-    // regime_demask #(WIDTH - 1) m_demask (
-    //     .a(posit_reduced),
-    //     .q(r_mask)
-    // );
+    wire [W_REG-1:0] leading_count =
+        (posit_reduced[MSB] == 1'b0) ? leading_zeroes : leading_ones;
 
-    // assign an ant-mask for valid nought and exponent locations
-    // always_comb
-    // begin
-    //     r_unmask = ~r_mask;
-    // end
-
-    // initial begin
-    //     $monitor("%0b %0b %0b", posit_reduced, r_mask, r_unmask);
-    // end
-
-    // use the exiting zeroes counts
-    logic [2*(WIDTH-1)-1:0] zero_mask_wide;
-    logic [2*(WIDTH-1)-1:0] one_mask_wide;
-    logic [WIDTH-2:0] zero_mask;
-    logic [WIDTH-2:0] one_mask;
-    assign zero_mask_wide = ({{WIDTH-1{1'b1}}, {WIDTH-1{1'b0}}}>>leading_zeroes);
-    assign zero_mask = zero_mask_wide[WIDTH-2:0];
-    assign one_mask_wide = ({{WIDTH-1{1'b1}}, {WIDTH-1{1'b0}}}>>leading_ones);
-    assign one_mask = one_mask_wide[WIDTH-2:0];
-
-    assign r_mask  = (posit_reduced[WIDTH-2] == 1'b0) ? zero_mask : one_mask;
-    assign r_unmask = ~r_mask;
+    wire [W_RED-1:0] mask = ~({W_RED {1'b1}} << leading_count);
 
     // Step 2: split the remainder mask into nought, exp, and fraction masks
-    logic [WIDTH-2:0] nought_mask;
-    logic [WIDTH-2:0] exp_mask;
-    logic [WIDTH-2:0] frac_mask;
+    logic [W_RED-1:0] nought_mask;
+    logic [W_RED-1:0] exp_mask;
+    logic [W_RED-1:0] frac_mask;
 
-    // Nought is the first 1 that appears in the anti-mask
-    find_first_one #(WIDTH - 1) m_ffo_nought (
-        .a(r_unmask),
+    // Find nought mask: nought is the first 1 that appears in the anti-mask
+    find_first_one #(W_RED) m_ffo_nought (
+        .a(mask),
         .q(nought_mask)
     );
-    // exp is the next #EN ones:
+
+    // Find exp mask: exp is the next #EN ones:
     find_first_n_ones #(
-        .W(WIDTH - 1),
+        .W(W_RED),
         .N(EN)
     ) m_ffno_exponent (
-        .a(r_unmask & ~nought_mask),
+        .a(mask & ~nought_mask),
         .q(exp_mask)
     );
 
     // finally the fraction is just the remaining mask
-    assign frac_mask = r_unmask & (~nought_mask) & (~exp_mask);
+    assign frac_mask = mask & (~nought_mask) & (~exp_mask);
 
     // debug signals
-    logic [WIDTH-2:0] nought_masked;
-    logic [WIDTH-2:0] exp_masked;
-    logic [WIDTH-2:0] frac_masked;
-    assign nought_masked = nought_mask & posit_reduced;
-    assign frac_masked = frac_mask & posit_reduced;
-    assign exp_masked = exp_mask & posit_reduced;
+    logic [W_RED-1:0] nought_masked;
+    logic [W_RED-1:0] exp_masked;
+    logic [W_RED-1:0] frac_masked;
+
+    assign nought_masked = posit_reduced & nought_mask;
+    assign frac_masked   = posit_reduced & frac_mask;
+    assign exp_masked    = posit_reduced & exp_mask;
 
     // Both the fraction and the exponent require alignment
     // This is done with explicit generation of every version, and a muxing
@@ -147,7 +127,7 @@ module format_decoder #(
     // and needs to be aligned to the MSB, as it is right-expanding
 
     // create an MSB+1 bit identifier
-    logic [WIDTH-2:0] frac_MSB_bit;
+    logic [W_RED-1:0] frac_MSB_bit;
     // First bit is always the same
     assign frac_MSB_bit[WIDTH-2] = frac_mask[WIDTH-2];
     generate

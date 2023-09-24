@@ -1,6 +1,4 @@
 import cocotb
-from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, FallingEdge, ReadOnly
 from cocotb.triggers import Timer
 from cocotb.binary import BinaryValue
 
@@ -17,7 +15,7 @@ async def test_decoder_a(dut):
     await Timer(100, "ns")
     # dut._log.info(f"Output: {dut.regime_len.value}")
     dut._log.info(f"Posit : {dut.posit_reduced.value}")
-    dut._log.info(f"R Mask: {dut.r_mask.value}")
+    dut._log.info(f"R Mask: {dut.mask.value}")
     dut._log.info(f"LO    : {dut.leading_ones.value}")
     dut._log.info(f"LZ    : {dut.leading_zeroes.value}")
     dut._log.info(f"Rlen  : {dut.regime_len.value}")
@@ -53,7 +51,7 @@ async def test_decoder_b(dut):
     await Timer(100, "ns")
     # dut._log.info(f"Output: {dut.regime_len.value}")
     dut._log.info(f"Posit : {dut.posit_reduced.value}")
-    dut._log.info(f"R Mask: {dut.r_mask.value}")
+    dut._log.info(f"R Mask: {dut.mask.value}")
     dut._log.info("")
     dut._log.info(f"N Mask: {dut.nought_mask.value}")
     dut._log.info(f"N 'ed : {dut.nought_masked.value}")

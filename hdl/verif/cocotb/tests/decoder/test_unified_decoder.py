@@ -38,3 +38,10 @@ def test_ffno():
         toplevel='find_first_n_ones',
         test_search_path='ffno'
     )
+
+def test_7b():
+    cocotb_test_wrapper(
+        src=src_dirs + ['../../verif/cocotb/tests/decoder/7b/tb_7b_pe.sv'],
+        toplevel='tb_7b_pe',
+        test_search_path='7b'
+    )

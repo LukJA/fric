@@ -4,7 +4,7 @@ module normalise #(
     parameter int WIDTH = 7,
     parameter int EN = 1,
     // Bits required for each field (+ sign bit)
-    parameter int W_REG = $clog2(WIDTH) - 1,
+    parameter int W_REG = $clog2(WIDTH),
     parameter int W_EXP = $clog2(WIDTH),
     parameter int W_MAN = WIDTH
 ) (
@@ -16,14 +16,16 @@ module normalise #(
     output logic signed   [W_EXP-1:0] exponent
 );
 
+    /* verilator lint_off PINMISSING */
     // get normalisation shift
     logic signed [W_REG-1:0] normz;
     count_lead_zero #(
         .W_IN (W_MAN)
-    ) m_mantossa_clz (
+    ) m_mantissa_clz (
         .vec(mantissa_sum),
         .cnt(normz)
     );
+    /* verilator lint_on PINMISSING */
 
     // implicit barrell shift to exclude leading '1'
     // TODO
@@ -50,19 +52,21 @@ module normalise #(
         .q(b_exp_tc)
     );
 
+    /* verilator lint_off PINMISSING */
     count_lead_zero #(
         .W_IN (W_EXP)
     ) m_clz_exp (
         .vec(a_exponent),
-        .cnt(shamt_exp)
+        .cnt(shamt_exp[$clog2(W_EXP)-1 : 0])
     );
 
     count_lead_zero #(
         .W_IN (W_EXP)
     ) m_clz_exp_bar (
         .vec(b_exp_tc),
-        .cnt(shamt_bar)
+        .cnt(shamt_bar[$clog2(W_EXP)-1 : 0])
     );
+    /* verilator lint_on PINMISSING */
 
     logic unsigned [W_EXP-1:0] exp_adj_a, exp_adj_b;
     assign exp_adj_a = (W_EXP[W_EXP-1:0] - shamt_exp - EN[W_EXP-1:0]);

@@ -4,8 +4,8 @@ module mantissa_adder #(
     parameter int WIDTH = 7,
     parameter int EN = 1,
     // Bits required for each field (+ sign bit)
-    parameter int W_REG = $clog2(WIDTH) + 1,
-    parameter int W_EXP = $clog2(WIDTH) + 1,
+    parameter int W_REG = $clog2(WIDTH),
+    parameter int W_EXP = $clog2(WIDTH),
     parameter int W_MAN = WIDTH
 ) (
     input sign_t a_sign,
