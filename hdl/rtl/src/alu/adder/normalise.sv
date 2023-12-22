@@ -9,11 +9,12 @@ module normalise #(
     parameter int W_MAN = WIDTH
 ) (
     input  logic unsigned [W_MAN-1:0] mantissa_sum,
-    input  logic signed   [W_REG-1:0] interim_regime,
-    input  logic signed   [W_EXP-1:0] interim_exponent,
+           logic signed   [W_REG-1:0] interim_regime,
+           logic signed   [W_EXP-1:0] interim_exponent,
+
     output logic unsigned [W_MAN-1:0] mantissa,
-    output logic signed   [W_REG-1:0] regime,
-    output logic signed   [W_EXP-1:0] exponent
+           logic signed   [W_REG-1:0] regime,
+           logic signed   [W_EXP-1:0] exponent
 );
 
     /* verilator lint_off PINMISSING */

@@ -9,39 +9,38 @@ module posit_adder #(
     parameter int W_EXP = $clog2(WIDTH),
     parameter int W_MAN = WIDTH
 ) (
-    input logic clk,
-    input logic rst,
-    input logic [WIDTH-1:0] a,
-    input logic [WIDTH-1:0] b,
+    input  logic             clk, rst,
+           logic [WIDTH-1:0] a, b,
+
     output logic [WIDTH-1:0] q
 );
 
-    sign_t a_sign, b_sign;
-    logic signed [W_REG-1:0] a_regime, b_regime;
-    logic signed [W_EXP-1:0] a_exponent, b_exponent;
+    sign_t                     a_sign,     b_sign;
+    logic signed   [W_REG-1:0] a_regime,   b_regime;
+    logic signed   [W_EXP-1:0] a_exponent, b_exponent;
     logic unsigned [W_MAN-1:0] a_mantissa, b_mantissa;
 
-    sign_t dc_a_sign, dc_b_sign;
-    logic signed [W_REG-1:0] dc_a_regime, dc_b_regime;
-    logic signed [W_EXP-1:0] dc_a_exponent, dc_b_exponent;
+    sign_t                     dc_a_sign,     dc_b_sign;
+    logic signed   [W_REG-1:0] dc_a_regime,   dc_b_regime;
+    logic signed   [W_EXP-1:0] dc_a_exponent, dc_b_exponent;
     logic unsigned [W_MAN-1:0] dc_a_mantissa, dc_b_mantissa;
 
-    logic signed [W_REG-1:0] interim_regime;
-    logic signed [W_EXP-1:0] interim_exponent;
+    logic signed   [W_REG-1:0] interim_regime;
+    logic signed   [W_EXP-1:0] interim_exponent;
     logic unsigned [W_MAN-1:0] mantissa_sum;
     logic n_r;
 
-    logic signed [W_REG-1:0] cn_interim_regime;
-    logic signed [W_EXP-1:0] cn_interim_exponent;
+    logic signed   [W_REG-1:0] cn_interim_regime;
+    logic signed   [W_EXP-1:0] cn_interim_exponent;
     logic unsigned [W_MAN-1:0] cn_mantissa_sum;
     logic cn_n_r;
 
-    logic signed [W_REG-1:0] regime_norm;
-    logic signed [W_EXP-1:0] exponent_norm;
+    logic signed   [W_REG-1:0] regime_norm;
+    logic signed   [W_EXP-1:0] exponent_norm;
     logic unsigned [W_MAN-1:0] mantissa_norm;
 
-    logic signed [W_REG-1:0] nd_regime;
-    logic signed [W_EXP-1:0] nd_exponent;
+    logic signed   [W_REG-1:0] nd_regime;
+    logic signed   [W_EXP-1:0] nd_exponent;
     logic unsigned [W_MAN-1:0] nd_mantissa;
     logic nd_n_r;
 

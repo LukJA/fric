@@ -8,18 +8,15 @@ module mantissa_adder #(
     parameter int W_EXP = $clog2(WIDTH),
     parameter int W_MAN = WIDTH
 ) (
-    input sign_t a_sign,
-    input sign_t b_sign,
-    input logic signed [W_REG-1:0] a_regime,
-    input logic signed [W_REG-1:0] b_regime,
-    input logic signed [W_EXP-1:0] a_exponent,
-    input logic signed [W_EXP-1:0] b_exponent,
-    input logic unsigned [W_MAN-1:0] a_mantissa,
-    input logic unsigned [W_MAN-1:0] b_mantissa,
+    input  sign_t                     a_sign,     b_sign,
+           logic signed   [W_REG-1:0] a_regime,   b_regime,
+           logic signed   [W_EXP-1:0] a_exponent, b_exponent,
+           logic unsigned [W_MAN-1:0] a_mantissa, b_mantissa,
+
     output logic unsigned [W_MAN-1:0] mantissa_sum,
-    output logic signed [W_REG-1:0] interim_regime,
-    output logic signed [W_EXP-1:0] interim_exponent,
-    output logic negate_result
+           logic signed   [W_REG-1:0] interim_regime,
+           logic signed   [W_EXP-1:0] interim_exponent,
+           logic                      negate_result
 );
 
     logic big_sign, small_sign;
@@ -31,24 +28,7 @@ module mantissa_adder #(
         .W_REG(W_REG),
         .W_EXP(W_EXP),
         .W_MAN(W_MAN)
-    ) m_comp (
-        .a_sign(a_sign),
-        .b_sign(b_sign),
-        .a_regime(a_regime),
-        .a_exponent(a_exponent),
-        .a_mantissa(a_mantissa),
-        .b_regime(b_regime),
-        .b_exponent(b_exponent),
-        .b_mantissa(b_mantissa),
-        .big_sign(big_sign),
-        .small_sign(small_sign),
-        .big_regime(big_regime),
-        .big_exponent(big_exponent),
-        .big_mantissa(big_mantissa),
-        .small_regime(small_regime),
-        .small_exponent(small_exponent),
-        .small_mantissa(small_mantissa)
-    );
+    ) m_comp (.*);
 
     // collect the interim values
     assign interim_regime = big_regime;
@@ -76,29 +56,30 @@ module mantissa_adder #(
     logic neg_in_sum;
     always_comb begin
         // in which situations do we negate the smaller value for the binary add
-        case ({
-            big_sign, small_sign
-        })
-            {POS, NEG}: neg_in_sum = 1'b1;
-            {NEG, POS}: neg_in_sum = 1'b1;
-            default:    neg_in_sum = 1'b0;
+        case ( {big_sign, small_sign} )
+            {POS, NEG}, {NEG, POS}: neg_in_sum = 1'b1;
+            default:                neg_in_sum = 1'b0;
         endcase
 
         // in which situations should we negate our final answer
-        case ({
-            big_sign, small_sign
-        })
-            {NEG, POS}: negate_result = 1'b1;
-            {NEG, NEG}: negate_result = 1'b1;
-            default:    negate_result = 1'b0;
+        case ( {big_sign, small_sign} )
+            {NEG, POS}, {NEG, NEG}: negate_result = 1'b1;
+            default:                negate_result = 1'b0;
         endcase
     end
 
-    assign small_mantissa_sh_alt = neg_in_sum ? (~small_mantissa_sh) + 1'b1 : small_mantissa_sh;
+    logic unsigned [W_MAN-1:0] small_mantissa_sh_comp;
+    two_comp #(W_MAN) small_mantissa_two_comp (
+        .a(small_mantissa_sh), .q(small_mantissa_sh_comp)
+    );
+    
+    assign small_mantissa_sh_alt = neg_in_sum ?
+        small_mantissa_sh_comp : small_mantissa_sh;
 
     // sum the final fraction sections
     logic unsigned [W_MAN:0] s_mantissa_sum;
     logic ovf;
+
     // True Sum
     assign s_mantissa_sum = big_mantissa + small_mantissa_sh_alt;
     assign ovf = s_mantissa_sum[W_MAN];
@@ -119,4 +100,3 @@ module mantissa_adder #(
     end
 
 endmodule : mantissa_adder
-
